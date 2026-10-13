@@ -4,7 +4,7 @@ import { pickLanguage, t } from '../safety/texts.js';
 import { cleanEmail } from '../shopify/orders.js';
 import { saveShippingChoice } from '../shopify/shippingChoice.js';
 import { finished } from '../chat/testBrain.js';
-import { rateLimit, lookupBrake, visitorKey } from './rateLimit.js';
+import { rateLimit, visitorBrake, visitorKey } from './rateLimit.js';
 
 // The chat API used by the widget:
 //   POST /api/chat/start    { language }                       -> welcome message + conversation id
@@ -13,7 +13,8 @@ import { rateLimit, lookupBrake, visitorKey } from './rateLimit.js';
 //   POST /api/chat/contact  { conversationId, name, email, message } -> contact form
 export function createChatRoute({ conversations, reply, settings, sendContactRequest }) {
     const router = express.Router();
-    const brake = lookupBrake();
+    const lookupBrake = visitorBrake({ max: 10, minutes: 60, label: 'Order lookups blocked' });
+    const contactBrake = visitorBrake({ max: 5, minutes: 60, label: 'Contact requests blocked' });
 
     router.use(express.json({ limit: '10kb' }));
     router.use(rateLimit({ max: 30, minutes: 1 }));
@@ -51,8 +52,8 @@ export function createChatRoute({ conversations, reply, settings, sendContactReq
             useFakeShopify: settings.useFakeShopify,
             splitMode: settings.splitMode,
             limits: settings.limits,
-            lookupAllowed: () => brake.allowed(key),
-            lookupFailed: () => brake.failed(key),
+            lookupAllowed: () => lookupBrake.allowed(key),
+            lookupFailed: () => lookupBrake.count(key),
         };
 
         try {
@@ -110,7 +111,9 @@ export function createChatRoute({ conversations, reply, settings, sendContactReq
         if (!conversation) return;
         const words = t(conversation.language);
 
-        if (conversation.contactRequests >= settings.limits.maxContactRequestsPerConversation) {
+        // At most 2 per conversation, and 5 per visitor per hour (also when someone keeps starting new conversations)
+        const visitor = visitorKey(req);
+        if (conversation.contactRequests >= settings.limits.maxContactRequestsPerConversation || !contactBrake.allowed(visitor)) {
             return res.send({ text: words.contactLimit });
         }
 
@@ -121,6 +124,7 @@ export function createChatRoute({ conversations, reply, settings, sendContactReq
         if (!name || !email || !message) return res.status(400).send({ text: words.badEmail });
 
         conversation.contactRequests += 1;
+        contactBrake.count(visitor);
         try {
             await sendContactRequest({ name, email, message, conversation });
             res.send({ text: words.contactThanks });

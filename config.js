@@ -52,6 +52,8 @@ export const contact = {
     to: env('CONTACT_EMAIL_TO', 'info@laboratoriumdiscounter.nl'),
     // When e-mail is off, contact requests are saved as files in this folder instead
     saveDir: env('CONTACT_SAVE_DIR', './data/contact-requests'),
+    // Saved contact requests contain personal data: they are deleted after this many days (AVG)
+    keepDays: Number(env('CONTACT_RETENTION_DAYS', '90')),
     email: {
         enabled: env('EMAIL_ENABLED', 'false') === 'true',
         host: env('SMTP_HOST'),
@@ -61,6 +63,13 @@ export const contact = {
         from: env('EMAIL_FROM'),
     },
 };
+
+// Running behind the Cloudflare Tunnel: trust Cloudflare's header with the visitor's real address.
+// Only set to true when the app can ONLY be reached through the tunnel (no open port).
+export const TRUST_CLOUDFLARE = env('TRUST_CLOUDFLARE', 'false') === 'true';
+
+// The test page (/test.html). Switch off when the app can be reached from the internet.
+export const SHOW_TEST_PAGE = env('SHOW_TEST_PAGE', 'true') === 'true';
 
 // Limits that keep the chat cheap and hard to abuse
 export const limits = {

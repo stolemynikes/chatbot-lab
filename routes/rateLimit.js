@@ -1,9 +1,18 @@
-// A simple brake: at most `max` requests per `minutes` per visitor (IP address).
-// Behind Cloudflare Tunnel the real visitor address comes from the Cf-Connecting-IP header.
-export function visitorKey(req) {
-    return req.get('cf-connecting-ip') || req.ip;
+// Who is the visitor? Used for the brakes below.
+// Behind the Cloudflare Tunnel every request comes from the tunnel, so the real visitor address is taken from the
+// Cf-Connecting-IP header that Cloudflare adds. That header is only trusted when TRUST_CLOUDFLARE=true:
+// without the tunnel anyone could send a fake one and get around the brakes.
+let trustCloudflare = false;
+
+export function setTrustCloudflare(trust) {
+    trustCloudflare = Boolean(trust);
 }
 
+export function visitorKey(req) {
+    return (trustCloudflare && req.get('cf-connecting-ip')) || req.ip;
+}
+
+// A simple brake: at most `max` requests per `minutes` per visitor (IP address).
 export function rateLimit({ max = 30, minutes = 1 } = {}) {
     const hits = new Map();
     setInterval(() => hits.clear(), minutes * 60 * 1000).unref();
@@ -18,16 +27,17 @@ export function rateLimit({ max = 30, minutes = 1 } = {}) {
     };
 }
 
-// Counts failed order lookups per visitor, so nobody can guess orders by starting new conversations.
-export function lookupBrake({ maxFailures = 10, minutes = 60 } = {}) {
-    const failures = new Map();
-    setInterval(() => failures.clear(), minutes * 60 * 1000).unref();
+// Counts something per visitor within a time window: failed order lookups (so nobody can guess orders by starting
+// new conversations), or contact requests (so nobody can flood info@).
+export function visitorBrake({ max = 10, minutes = 60, label = 'Brake' } = {}) {
+    const counts = new Map();
+    setInterval(() => counts.clear(), minutes * 60 * 1000).unref();
     return {
-        allowed: (key) => (failures.get(key) ?? 0) < maxFailures,
-        failed: (key) => {
-            const count = (failures.get(key) ?? 0) + 1;
-            failures.set(key, count);
-            if (count === maxFailures) console.log(`Order lookups blocked for ${key}: ${maxFailures} failed attempts`);
+        allowed: (key) => (counts.get(key) ?? 0) < max,
+        count: (key) => {
+            const count = (counts.get(key) ?? 0) + 1;
+            counts.set(key, count);
+            if (count === max) console.log(`${label}: ${key} reached ${max} in ${minutes} minutes`);
         },
     };
 }

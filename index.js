@@ -1,10 +1,11 @@
 import express from 'express';
 
-import { PORT, CHAT_MODE, claude, ALLOWED_ORIGINS, shopify, useFakeShopify, SPLIT_SHIPMENT_MODE, contact, limits } from './config.js';
+import { PORT, CHAT_MODE, claude, ALLOWED_ORIGINS, TRUST_CLOUDFLARE, SHOW_TEST_PAGE, shopify, useFakeShopify, SPLIT_SHIPMENT_MODE, contact, limits } from './config.js';
 import { Conversations } from './chat/conversations.js';
 import { testReply } from './chat/testBrain.js';
 import { createClaudeReply } from './chat/claudeBrain.js';
-import { createContactSender } from './email/contactRequest.js';
+import { createContactSender, deleteOldContactRequests } from './email/contactRequest.js';
+import { setTrustCloudflare } from './routes/rateLimit.js';
 
 //routes import
 import { createChatRoute } from './routes/chatRoute.js';
@@ -25,8 +26,10 @@ if (problems.length > 0) {
 }
 
 const app = express();
-// Behind Cloudflare Tunnel or another proxy: use the visitor's real IP address for the rate limit
-app.set('trust proxy', 1);
+// Behind the Cloudflare Tunnel: use the visitor's real IP address for the brakes. Without the tunnel nothing is
+// trusted, so nobody can fake an address with a header.
+app.set('trust proxy', TRUST_CLOUDFLARE ? 1 : false);
+setTrustCloudflare(TRUST_CLOUDFLARE);
 app.disable('x-powered-by');
 
 // Protection headers on every answer
@@ -45,6 +48,9 @@ app.use('/api', (req, res, next) => {
     const origin = req.get('origin');
     if (origin && ALLOWED_ORIGINS.includes(origin)) {
         res.set({ 'Access-Control-Allow-Origin': origin, 'Access-Control-Allow-Headers': 'Content-Type', Vary: 'Origin' });
+    } else if (origin && ALLOWED_ORIGINS.length > 0 && !(SHOW_TEST_PAGE && origin === `${req.protocol}://${req.get('host')}`)) {
+        // Another website tries to use the chat (on our costs): refuse
+        return res.sendStatus(403);
     }
     if (req.method === 'OPTIONS') return res.sendStatus(204);
     next();
@@ -61,10 +67,22 @@ app.use(
     }),
 );
 
-// The widget (widget.js) and a test page (test.html)
+// For Container Manager's health check
+app.get('/health', (req, res) => res.send('ok'));
+
+// The test page only when switched on (not when the app can be reached from the internet)
+if (!SHOW_TEST_PAGE) app.use(['/test.html', '/test-lang.js'], (req, res) => res.sendStatus(404));
+
+// The widget (widget.js) and the test page (test.html)
 app.use(express.static('public'));
 
+// Saved contact requests are deleted after CONTACT_RETENTION_DAYS (now, and then once a day)
+deleteOldContactRequests(contact);
+setInterval(() => deleteOldContactRequests(contact), 24 * 60 * 60 * 1000).unref();
+
 app.listen(PORT, () => {
-    console.log(`Chatbot running on http://localhost:${PORT}/test.html`);
+    console.log(`Chatbot running on port ${PORT}${SHOW_TEST_PAGE ? `, test page: http://localhost:${PORT}/test.html` : ' (test page off)'}`);
+    if (TRUST_CLOUDFLARE) console.log('Behind the Cloudflare Tunnel: visitor addresses come from Cloudflare');
+    if (ALLOWED_ORIGINS.length > 0) console.log(`Chat allowed on: ${ALLOWED_ORIGINS.join(', ')}`);
     console.log(`Mode: ${CHAT_MODE}${CHAT_MODE === 'claude' ? ` (${claude.model})` : ''}, Shopify: ${useFakeShopify ? 'fake test orders' : shopify.storeDomain}, partial shipping: ${SPLIT_SHIPMENT_MODE}, contact: ${contact.email.enabled ? `e-mail to ${contact.to}` : `files in ${contact.saveDir}`}`);
 });

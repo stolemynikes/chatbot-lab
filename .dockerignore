@@ -1,0 +1,12 @@
+# Never put secrets or local data in the container image
+.env
+.env.*
+!.env.example
+data
+node_modules
+
+# Not needed to run the app
+test
+docs
+.git
+.vscode
