@@ -1,0 +1,16 @@
+{
+  "name": "laboratoriumdiscounter-chatbot",
+  "version": "0.1.0",
+  "description": "Customer service chatbot for the Shopify store (test mode first, Claude later)",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node index.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.133.0",
+    "express": "^5.3.0",
+    "nodemailer": "^10.1.0"
+  }
+}
