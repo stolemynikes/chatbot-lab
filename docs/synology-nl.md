@@ -13,45 +13,29 @@ teststore (Shopify) ──laadt widget.js──> Cloudflare quick tunnel (https)
 - Je hebt **geen Cloudflare-account** nodig: de "quick tunnel" geeft een willekeurig adres zoals
   `https://lucky-words-here.trycloudflare.com`. **Dat adres verandert na elke herstart** van de NAS of het project.
   Voor de echte livegang maken we een vaste tunnel met een eigen adres.
+- Casper draait in de container als een eigen gebruiker zonder beheerrechten en kan alleen bij zijn eigen bestanden,
+  niet bij `facturen` of andere mappen. Voor de echte livegang maken we, net als bij de factuur-app, een aparte
+  DSM-gebruiker als extra veiligheidslaag.
 
 Wat je nodig hebt: de NAS met **DSM 7.2** of nieuwer en **Container Manager** (staat er al voor de factuur-app).
-Ongeveer een half uur.
+Ongeveer een kwartier.
 
 ---
 
-## 1. Een eigen gebruiker voor Casper
-
-Casper krijgt een eigen gebruiker zonder beheerrechten, net als de factuur-app.
-
-1. **Configuratiescherm → Gebruiker en groep → Maken**:
-   - Naam: `casper`, met een lang willekeurig wachtwoord (je hoeft er nooit mee in te loggen)
-   - Groep: alleen `users`
-   - Rechten: **Lezen/schrijven** op `docker`, **Geen toegang** op alle andere mappen (ook niet op `facturen`)
-   - Toepassingen: alles **weigeren**
-2. **Het gebruikersnummer opzoeken** (eenmalig, via SSH):
-   - Configuratiescherm → Terminal en SNMP → **SSH-service inschakelen**
-   - Op je pc, in PowerShell: `ssh <jouw-beheerdersnaam>@<ip-van-de-nas>`
-   - Typ: `id casper`. Je ziet iets als `uid=1028(casper) gid=100(users)`.
-   - Onthoud de twee getallen, en **zet SSH daarna weer uit**.
-
-## 2. De bestanden op de NAS zetten
+## 1. De bestanden op de NAS zetten
 
 1. Op de pc, in de projectmap: `node scripts/makeNasPackage.js`. Dat maakt **`build/casper-nas.zip`**
    (zonder `.env`, `node_modules`, `data` en tests).
 2. Maak via **File Station** in de map `docker` een map **`casper`**, en pak de zip daarin uit.
 3. Zet je **`.env`** van de pc ook in `docker/casper`. Pas daarin aan, of voeg toe:
    ```
-   PUID=1028                    ← het eerste getal uit stap 1
-   PGID=100                     ← het tweede getal uit stap 1
    SPLIT_SHIPMENT_MODE=off
    ALLOWED_ORIGINS=https://hevjuq-bg.myshopify.com
    ```
-4. Maak in `docker/casper` een lege map **`data`**.
-5. Rechtsklik op `docker/casper` → Eigenschappen → Machtiging → gebruiker `casper` **Lezen/schrijven**.
 
 > `.env` bevat je geheime sleutels (Shopify, Claude). Zet hem alleen in `docker/casper`, nergens anders.
 
-## 3. Starten
+## 2. Starten
 
 1. **Container Manager → Project → Maken**:
    - Projectnaam: `casper`
@@ -69,27 +53,27 @@ Casper krijgt een eigen gebruiker zonder beheerrechten, net als de factuur-app.
 
 Ziet Casper een fout in de instellingen, dan staat in het logboek precies welke regel in `.env` ontbreekt.
 
-## 4. Casper in de teststore zetten
+## 3. Casper in de teststore zetten
 
 1. Shopify-admin van de teststore → **Webwinkel → Thema's** → bij het thema → **⋯ → Code bewerken**.
 2. Open **`layout/theme.liquid`**. Zoek helemaal onderaan **`</body>`**.
-3. Plak **direct boven** `</body>` deze regel (met het adres uit stap 3.4):
+3. Plak **direct boven** `</body>` deze regel (met het adres uit stap 2.4):
    ```html
    <script src="https://lucky-words-here.trycloudflare.com/widget.js" defer></script>
    ```
 4. **Opslaan**. Open de teststore (met het winkelwachtwoord): rechtsonder staat de chatknop.
 
-**Na een herstart** van de NAS of het project heeft de tunnel een **nieuw adres**: zoek het opnieuw op (stap 3.4)
+**Na een herstart** van de NAS of het project heeft de tunnel een **nieuw adres**: zoek het opnieuw op (stap 2.4)
 en vervang het in `theme.liquid`.
 
-## 5. Een nieuwe versie zetten
+## 4. Een nieuwe versie zetten
 
 1. Op de pc: `node scripts/makeNasPackage.js`
-2. Vervang de bestanden in `docker/casper` door de inhoud van de nieuwe zip (**niet** `.env` en **niet** `data`).
+2. Vervang de bestanden in `docker/casper` door de inhoud van de nieuwe zip (**niet** `.env`).
 3. **Container Manager → Project → casper → Bouwen** en opnieuw starten.
-4. Nieuw tunneladres opzoeken en in `theme.liquid` zetten (stap 3.4 en 4).
+4. Nieuw tunneladres opzoeken en in `theme.liquid` zetten (stap 2.4 en 3).
 
-## 6. Stoppen
+## 5. Stoppen
 
 **Container Manager → Project → casper → Stoppen.** De chatknop verdwijnt dan vanzelf uit de teststore
 (het script kan niet meer laden); de winkel zelf werkt gewoon door. Haal de regel uit `theme.liquid` weg als je
@@ -101,9 +85,10 @@ klaar bent met testen.
 
 - **Deels verzenden staat uit** (`SPLIT_SHIPMENT_MODE=off`): in de stand `log` zegt Casper "Genoteerd" terwijl er nog
   niets met de keuze gebeurt.
-- **Contactberichten** worden (zolang e-mail uit staat) bewaard in `docker/casper/data/contact-requests` en na 90 dagen
-  automatisch verwijderd.
+- **Contactberichten** blijven tijdens de test in de container (zolang e-mail uit staat) en verdwijnen bij een nieuwe
+  versie. Bekijken: Container Manager → Container → casper → **Terminal** → `ls /tmp/contact-requests` en
+  `cat /tmp/contact-requests/<bestand>`.
 - **Kosten**: elke vraag aan Casper gaat naar Claude (Haiku). Zet in de Anthropic-console een maandlimiet.
-- Het tunneladres is willekeurig maar wel openbaar: wie het kent, kan Casper gebruiken. Voor een test is dat geen
-  probleem (Casper laat geen orders zien zonder ordernummer + e-mail). Voor livegang komt er een vaste tunnel met
-  extra beveiliging bij Cloudflare.
+- Het tunneladres is willekeurig maar wel openbaar: wie het kent, kan Casper gebruiken, maar alleen vanuit de
+  teststore (andere websites worden geweigerd) en Casper laat geen orders zien zonder ordernummer + e-mail.
+  Voor livegang komt er een vaste tunnel met extra beveiliging bij Cloudflare.

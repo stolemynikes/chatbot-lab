@@ -15,7 +15,7 @@ When a customer is stuck, Casper offers a contact form that goes to info@.
 | # | What | Why / notes |
 |---|---|---|
 | 1 | **Fill in every `[INVULLEN]`** in `content/faq.js` | Shipping times, return policy, invoices, payment methods, who may order, phone/opening hours. Casper shows these texts word for word. |
-| 2 | **Fixed Cloudflare tunnel** with an own address and HTTPS | Test: quick tunnel (random address, changes after a restart), see `docs/synology-nl.md`. For live: put the domain on Cloudflare and use a fixed tunnel like the invoice app, e.g. `chat.laboratoriumdiscounter.nl`. |
+| 2 | **Fixed Cloudflare tunnel** with an own address and HTTPS | Test: quick tunnel (random address, changes after a restart), see `docs/synology-nl.md`. For live: put the domain on Cloudflare and use a fixed tunnel like the invoice app, e.g. `chat.laboratoriumdiscounter.nl`, and run Casper as an own DSM user (`user:` in docker-compose.yml). |
 | 3 | ✅ ~~Only trust `Cf-Connecting-IP` behind the tunnel~~ | Done: `TRUST_CLOUDFLARE` (set by docker-compose.yml). |
 | 4 | ✅ ~~Switch off the test page~~ | Done: `SHOW_TEST_PAGE=false` (set by docker-compose.yml). |
 | 5 | **Security: bot check on the contact form** | Limit per visitor (5 per hour) is done. Still to do: Cloudflare Turnstile, before going live (not needed in the password-protected test store). |

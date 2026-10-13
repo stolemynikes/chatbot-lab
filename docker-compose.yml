@@ -11,20 +11,18 @@ services:
     build: .
     container_name: casper
     restart: unless-stopped
-    # The DSM user "casper" (see the guide). It may only use this project folder.
-    user: "${PUID:-1026}:${PGID:-100}"
+    # Test: Casper runs as the container's own user "node" (no admin rights, and it can only reach
+    # what is listed under "volumes", which is nothing). For going live: an own DSM user, like the invoice app.
     env_file: .env
     environment:
       # Paths inside the container
       PORT: 8090
-      CONTACT_SAVE_DIR: /app/data/contact-requests
+      # Test: contact requests stay inside the container (gone after a rebuild). For going live: e-mail to info@.
+      CONTACT_SAVE_DIR: /tmp/contact-requests
       TZ: Europe/Amsterdam
       # Only reachable through the tunnel: trust Cloudflare's visitor address, and no public test page
       TRUST_CLOUDFLARE: "true"
       SHOW_TEST_PAGE: "false"
-    volumes:
-      # Contact requests (when e-mail is off) are saved here, inside this project folder
-      - ./data:/app/data
     networks:
       - intern
 
