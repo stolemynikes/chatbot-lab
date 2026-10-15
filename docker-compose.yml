@@ -1,7 +1,7 @@
-# Casper + Cloudflare quick tunnel on the Synology NAS - TEST setup for the test store.
+# Kasper + Cloudflare quick tunnel on the Synology NAS - TEST setup for the test store.
 # Container Manager → Project → Create → choose this folder. Step by step: docs/synology-nl.md
 #
-# Nothing is opened in the router: Casper has no ports on the network.
+# Nothing is opened in the router: Kasper has no ports on the network.
 # The only way in is the Cloudflare quick tunnel: a random https://….trycloudflare.com address,
 # shown in the log of the container "casper-tunnel". It changes after every restart.
 # For going live this becomes a fixed tunnel with an own address (like the invoice app).
@@ -11,7 +11,7 @@ services:
     build: .
     container_name: casper
     restart: unless-stopped
-    # Test: Casper runs as the container's own user "node" (no admin rights, and it can only reach
+    # Test: Kasper runs as the container's own user "node" (no admin rights, and it can only reach
     # what is listed under "volumes", which is nothing). For going live: an own DSM user, like the invoice app.
     env_file: .env
     environment:

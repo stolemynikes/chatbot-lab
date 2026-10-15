@@ -1,4 +1,4 @@
-# Casper as a container, for Synology Container Manager (or any other Docker host).
+# Kasper as a container, for Synology Container Manager (or any other Docker host).
 # Built and started by docker-compose.yml. See docs/synology-nl.md.
 FROM node:24-slim
 

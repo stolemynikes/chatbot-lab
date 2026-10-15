@@ -20,10 +20,10 @@
     var busy = false;
 
     var labels = {
-        nl: { title: 'Casper · Klantenservice', placeholder: 'Typ je vraag...', send: 'Verstuur', name: 'Naam', email: 'E-mailadres', message: 'Je vraag', formIntro: 'Een medewerker van onze klantenservice leest je vraag en antwoordt per e-mail.', cancel: 'Annuleren', open: 'Chat openen', close: 'Sluiten', houseBrand: 'Huismerk', from: 'vanaf', stockIn: 'Op voorraad', stockAvail: 'Leverbaar', stockOut: 'Niet op voorraad', days: 'Levertijd naar {country}: {range} werkdagen', weeks: 'Levertijd naar {country}: {range} weken', restart: 'Het gesprek is verlopen. Ik start een nieuw gesprek.', offline: 'De chat is even niet bereikbaar. Mail ons op info@laboratoriumdiscounter.nl.' },
-        en: { title: 'Casper · Customer service', placeholder: 'Type your question...', send: 'Send', name: 'Name', email: 'E-mail address', message: 'Your question', formIntro: 'Someone from our customer service team will read your question and reply by e-mail.', cancel: 'Cancel', open: 'Open chat', close: 'Close', houseBrand: 'House brand', from: 'from', stockIn: 'In stock', stockAvail: 'Available', stockOut: 'Out of stock', days: 'Delivery to {country}: {range} working days', weeks: 'Delivery to {country}: {range} weeks', restart: 'The conversation expired. Starting a new one.', offline: 'The chat is not available right now. E-mail us at info@laboratoriumdiscounter.nl.' },
-        de: { title: 'Casper · Kundenservice', placeholder: 'Ihre Frage...', send: 'Senden', name: 'Name', email: 'E-Mail-Adresse', message: 'Ihre Frage', formIntro: 'Ein Mitarbeiter unseres Kundenservice liest Ihre Frage und antwortet per E-Mail.', cancel: 'Abbrechen', open: 'Chat öffnen', close: 'Schließen', houseBrand: 'Eigenmarke', from: 'ab', stockIn: 'Auf Lager', stockAvail: 'Lieferbar', stockOut: 'Nicht auf Lager', days: 'Lieferzeit nach {country}: {range} Werktage', weeks: 'Lieferzeit nach {country}: {range} Wochen', restart: 'Das Gespräch ist abgelaufen. Ich starte ein neues.', offline: 'Der Chat ist gerade nicht erreichbar. Schreiben Sie an info@laboratoriumdiscounter.nl.' },
-        fr: { title: 'Casper · Service client', placeholder: 'Votre question...', send: 'Envoyer', name: 'Nom', email: 'Adresse e-mail', message: 'Votre question', formIntro: 'Un conseiller de notre service client lira votre question et vous répondra par e-mail.', cancel: 'Annuler', open: 'Ouvrir le chat', close: 'Fermer', houseBrand: 'Marque maison', from: 'à partir de', stockIn: 'En stock', stockAvail: 'Disponible', stockOut: 'Rupture de stock', days: 'Livraison vers {country} : {range} jours ouvrés', weeks: 'Livraison vers {country} : {range} semaines', restart: 'La conversation a expiré. Nouvelle conversation.', offline: "Le chat n'est pas disponible. Écrivez à info@laboratoriumdiscounter.nl." },
+        nl: { title: 'Kasper · Klantenservice', placeholder: 'Typ je vraag...', send: 'Verstuur', name: 'Naam', email: 'E-mailadres', message: 'Je vraag', subject: 'Onderwerp', formIntro: 'Een medewerker van onze klantenservice leest je vraag en antwoordt per e-mail, meestal binnen 24 uur.', open: 'Chat openen', close: 'Sluiten', houseBrand: 'Huismerk', from: 'vanaf', stockIn: 'Op voorraad', stockAvail: 'Leverbaar', stockOut: 'Niet op voorraad', days: 'Levertijd naar {country}: {range} werkdagen', weeks: 'Levertijd naar {country}: {range} weken', offline: 'Kasper is even niet bereikbaar. Je kunt ons bellen op +31 255 700 210 (ma–do 09:00–16:00, vr 09:00–12:00) of mailen naar info@laboratoriumdiscounter.nl – meestal antwoorden we binnen 24 uur.', callUs: '📞 Bel ons', mailUs: '✉️ Mail ons', retry: '↻ Opnieuw proberen', offlinePlaceholder: 'Chat even niet bereikbaar' },
+        en: { title: 'Kasper · Customer service', placeholder: 'Type your question...', send: 'Send', name: 'Name', email: 'E-mail address', message: 'Your question', subject: 'Subject', formIntro: 'Someone from our customer service team will read your question and reply by e-mail, usually within 24 hours.', open: 'Open chat', close: 'Close', houseBrand: 'House brand', from: 'from', stockIn: 'In stock', stockAvail: 'Available', stockOut: 'Out of stock', days: 'Delivery to {country}: {range} working days', weeks: 'Delivery to {country}: {range} weeks', offline: 'Kasper is not available right now. You can call us on +31 255 700 210 (Mon–Thu 09:00–16:00, Fri 09:00–12:00) or e-mail info@laboratoriumdiscounter.nl – we usually reply within 24 hours.', callUs: '📞 Call us', mailUs: '✉️ E-mail us', retry: '↻ Try again', offlinePlaceholder: 'Chat not available right now' },
+        de: { title: 'Kasper · Kundenservice', placeholder: 'Ihre Frage...', send: 'Senden', name: 'Name', email: 'E-Mail-Adresse', message: 'Ihre Frage', subject: 'Betreff', formIntro: 'Ein Mitarbeiter unseres Kundenservice liest Ihre Frage und antwortet per E-Mail, meist innerhalb von 24 Stunden.', open: 'Chat öffnen', close: 'Schließen', houseBrand: 'Eigenmarke', from: 'ab', stockIn: 'Auf Lager', stockAvail: 'Lieferbar', stockOut: 'Nicht auf Lager', days: 'Lieferzeit nach {country}: {range} Werktage', weeks: 'Lieferzeit nach {country}: {range} Wochen', offline: 'Kasper ist gerade nicht erreichbar. Sie erreichen uns telefonisch unter +31 255 700 210 (Mo–Do 09:00–16:00, Fr 09:00–12:00, auf Niederländisch oder Englisch) oder per E-Mail an info@laboratoriumdiscounter.nl – meist antworten wir innerhalb von 24 Stunden.', callUs: '📞 Anrufen', mailUs: '✉️ E-Mail', retry: '↻ Erneut versuchen', offlinePlaceholder: 'Chat gerade nicht erreichbar' },
+        fr: { title: 'Kasper · Service client', placeholder: 'Votre question...', send: 'Envoyer', name: 'Nom', email: 'Adresse e-mail', message: 'Votre question', subject: 'Objet', formIntro: 'Un conseiller de notre service client lira votre question et vous répondra par e-mail, généralement sous 24 heures.', open: 'Ouvrir le chat', close: 'Fermer', houseBrand: 'Marque maison', from: 'à partir de', stockIn: 'En stock', stockAvail: 'Disponible', stockOut: 'Rupture de stock', days: 'Livraison vers {country} : {range} jours ouvrés', weeks: 'Livraison vers {country} : {range} semaines', offline: "Kasper n'est pas disponible pour le moment. Vous pouvez nous appeler au +31 255 700 210 (lun–jeu 09h00–16h00, ven 09h00–12h00, en néerlandais ou en anglais) ou écrire à info@laboratoriumdiscounter.nl – nous répondons généralement sous 24 heures.", callUs: '📞 Appeler', mailUs: '✉️ E-mail', retry: '↻ Réessayer', offlinePlaceholder: 'Chat indisponible pour le moment' },
     };
     // Texts on the order card
     var orderLabels = {
@@ -37,6 +37,8 @@
     if (!labels[language]) language = 'en';
     var L = labels[language];
     var contactLabel = null; // the "send a message" button text, comes from the server
+    var contactTopic = 'other'; // the subject the contact form starts with, comes from the server
+    var contactSubjects = null; // the subjects in the dropdown, in the customer's language
 
     // The chosen language is remembered in this browser only (a convenience; the chat works without it)
     var savedLanguage = null;
@@ -46,6 +48,7 @@
     if (!labels[savedLanguage]) savedLanguage = null;
 
     var css =
+        '.ldc-btn-icon{width:32px;height:32px;display:block;margin:auto}' +
         '#ldc-btn{position:fixed;right:20px;bottom:20px;width:56px;height:56px;border-radius:50%;border:0;background:#1e4475;color:#fff;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25);z-index:2147483000;font-size:26px;line-height:56px}' +
         '#ldc-box{position:fixed;right:20px;bottom:88px;width:360px;max-width:calc(100vw - 32px);height:520px;max-height:calc(100vh - 110px);background:#fff;color:#1d1d1f;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.25);display:none;flex-direction:column;overflow:hidden;z-index:2147483000;font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}' +
         '#ldc-box.open{display:flex}' +
@@ -59,11 +62,13 @@
         '.ldc-row{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}' +
         '.ldc-chip{border:1px solid #1e4475;background:#fff;color:#1e4475;border-radius:16px;padding:5px 11px;cursor:pointer;font:inherit}' +
         '.ldc-chip:disabled{opacity:.5;cursor:default}' +
+        'a.ldc-chip{text-decoration:none;display:inline-block}' +
+        '#ldc-input:disabled,#ldc-send:disabled{opacity:.6;cursor:not-allowed}' +
         '#ldc-form{display:flex;border-top:1px solid #e3e5e8}' +
         '#ldc-input{flex:1;min-width:0;border:0;padding:12px;font:inherit;font-size:16px;outline:none}' +
         '#ldc-send{border:0;background:#1e4475;color:#fff;padding:0 16px;cursor:pointer;font:inherit}' +
         '.ldc-contact{background:#fff;border:1px solid #e3e5e8;border-radius:10px;padding:10px;margin:6px 0;display:flex;flex-direction:column;gap:6px}' +
-        '.ldc-contact input,.ldc-contact textarea{border:1px solid #c9ccd1;border-radius:6px;padding:7px;font:inherit}' +
+        '.ldc-contact input,.ldc-contact textarea,.ldc-contact select{border:1px solid #c9ccd1;border-radius:6px;padding:7px;font:inherit;background:#fff;color:inherit}' +
         '.ldc-contact textarea{min-height:80px;resize:vertical}' +
         '.ldc-contact-intro{margin:0 0 2px;font-size:13px;color:#4b5563}' +
         '.ldc-cards{display:flex;flex-direction:column;gap:8px;margin:6px 0;max-width:92%}' +
@@ -119,6 +124,8 @@
         '.ldc-lang-item[aria-current=true]{font-weight:700;color:#1e4475}' +
         '.ldc-check{margin-left:auto;color:#1e4475}' +
         '#ldc-head > span:last-child{display:flex;align-items:center;gap:6px}' +
+        '.ldc-head-name{display:flex;align-items:center;gap:10px;min-width:0}' +
+        '.ldc-avatar{width:36px;height:36px;flex:none;border-radius:50%;background:#e3ecf8;box-shadow:0 0 0 2px rgba(255,255,255,.35)}' +
         '.ldc-typing{display:inline-flex;gap:4px;align-items:center;padding:11px 13px}' +
         '.ldc-typing span{width:7px;height:7px;border-radius:50%;background:#9aa3ad;animation:ldc-dot 1.1s infinite ease-in-out}' +
         '.ldc-typing span:nth-child(2){animation-delay:.15s}' +
@@ -150,7 +157,7 @@
         '.ldc-msg{max-width:88%;font-size:15px}' +
         '.ldc-chip{padding:9px 14px;font-size:14px}' +
         '.ldc-cards,.ldc-order{max-width:100%}' +
-        '.ldc-contact input,.ldc-contact textarea{font-size:16px}' +
+        '.ldc-contact input,.ldc-contact textarea,.ldc-contact select{font-size:16px}' +
         '}' +
         '@media (prefers-reduced-motion:reduce){#ldc-btn,#ldc-box,#ldc-box *{animation:none!important;transition:none!important}}';
 
@@ -158,7 +165,14 @@
     style.textContent = css;
     document.head.appendChild(style);
 
-    var button = el('button', { id: 'ldc-btn', type: 'button', 'aria-label': L.open }, '💬');
+    // The round chat button: a drawn chat bubble (an emoji looks different on every device)
+    var button = el('button', { id: 'ldc-btn', type: 'button', 'aria-label': L.open });
+    button.appendChild(svg('0 0 48 48', [
+        ['path', { d: 'M14 9h20a6 6 0 0 1 6 6v12a6 6 0 0 1-6 6H23.5l-8 7v-7H14a6 6 0 0 1-6-6V15a6 6 0 0 1 6-6z', fill: 'none', stroke: 'currentColor', 'stroke-width': 2.8, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }],
+        ['circle', { cx: 17, cy: 21, r: 2.3, fill: 'currentColor' }],
+        ['circle', { cx: 24, cy: 21, r: 2.3, fill: 'currentColor' }],
+        ['circle', { cx: 31, cy: 21, r: 2.3, fill: 'currentColor' }],
+    ], { class: 'ldc-btn-icon' }));
     var box = el('div', { id: 'ldc-box', role: 'dialog', 'aria-label': L.title });
     var closeButton = el('button', { type: 'button', 'aria-label': L.close }, '×');
     var languageButton = el('button', { type: 'button', class: 'ldc-lang', 'aria-haspopup': 'true', 'aria-expanded': 'false', title: 'Taal · Language · Sprache · Langue' });
@@ -168,7 +182,11 @@
     var headButtons = el('span');
     headButtons.appendChild(languageButton);
     headButtons.appendChild(closeButton);
-    head.appendChild(headTitle);
+    // Kasper's profile picture (a lab ghost with goggles and a flask) left of the name
+    var headName = el('span', { class: 'ldc-head-name' });
+    headName.appendChild(kasperAvatar());
+    headName.appendChild(headTitle);
+    head.appendChild(headName);
     head.appendChild(headButtons);
     var log = el('div', { id: 'ldc-log', 'aria-live': 'polite' });
     var form = el('form', { id: 'ldc-form' });
@@ -181,7 +199,16 @@
     box.appendChild(form);
     box.appendChild(languageMenu);
     updateLanguageButton();
-    document.body.appendChild(button);
+
+    // Only show the chat button when Kasper can be reached (a quick check, at most 5 seconds)
+    var health = new URL('/health', script ? script.src : location.href).href;
+    var controller = window.AbortController ? new AbortController() : null;
+    if (controller) setTimeout(function () { controller.abort(); }, 5000);
+    fetch(health, { signal: controller ? controller.signal : undefined })
+        .then(function (response) {
+            if (response.ok) document.body.appendChild(button);
+        })
+        .catch(function () {});
     document.body.appendChild(box);
 
     var phone = window.matchMedia ? window.matchMedia('(max-width: 520px)') : { matches: false };
@@ -230,7 +257,7 @@
         if (box.classList.contains('open')) {
             if (!phone.matches) input.focus();
             // Start in the language the customer chose before (language menu), otherwise the language of the website.
-            // When the customer writes in another language, Casper switches by himself.
+            // When the customer writes in another language, Kasper switches by himself.
             if (!conversationId && !log.firstChild) {
                 applyLanguage(savedLanguage || language);
                 start();
@@ -301,7 +328,7 @@
         anchor = log.lastChild;
         return request('/language', { conversationId: conversationId, language: code })
             .then(showAnswer)
-            .catch(function () { show(L.offline, 'bot'); })
+            .catch(offline)
             .then(function () { busy = false; });
     }
 
@@ -317,6 +344,51 @@
             node.appendChild(child);
         });
         return node;
+    }
+
+    // Kasper the lab ghost, floating: a round ghost with a wavy hem, goggles pushed up, blush, little arms and an
+    // Erlenmeyer flask. He is tilted a little, with motion lines and a shadow below. The flask liquid is clipped
+    // to the inside of the flask, so it can never stick out.
+    function kasperAvatar() {
+        var ns = 'http://www.w3.org/2000/svg';
+        var navy = '#1e4475';
+        var line = { stroke: navy, 'stroke-width': 2.4, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', fill: 'none' };
+        var draw = function (extra) { return Object.assign({}, line, extra); };
+        var node = function (tag, attributes, children) {
+            var item = document.createElementNS(ns, tag);
+            for (var key in attributes) item.setAttribute(key, attributes[key]);
+            (children || []).forEach(function (child) { item.appendChild(node(child[0], child[1], child[2])); });
+            return item;
+        };
+        var flaskShape = 'M48.4 36.3v4.2l-3.8 6.4c-.6 1.1 0 2.2 1.3 2.2h8c1.3 0 1.9-1.1 1.3-2.2l-3.8-6.4v-4.2z';
+
+        var ghost = [
+            ['path', draw({ d: 'M18.2 34.5c-2.6-.3-4.6 1-5.4 3.2' })],
+            ['path', draw({ d: 'M18 46V29c0-8.8 6.3-16 14-16s14 7.2 14 16v17q-2.33 4-4.67 0t-4.67 0-4.67 0-4.67 0-4.67 0-4.66 0z', fill: '#fff' })],
+            ['ellipse', { cx: 27.2, cy: 29.5, rx: 2.2, ry: 3, fill: navy }],
+            ['ellipse', { cx: 36.8, cy: 29.5, rx: 2.2, ry: 3, fill: navy }],
+            ['ellipse', { cx: 23.6, cy: 35, rx: 2.3, ry: 1.4, fill: '#f6b8c9' }],
+            ['ellipse', { cx: 40.4, cy: 35, rx: 2.3, ry: 1.4, fill: '#f6b8c9' }],
+            ['path', draw({ d: 'M29.6 35.4c1.4 1.4 3.4 1.4 4.8 0', 'stroke-width': 2.2 })],
+            // goggles pushed up on the head
+            ['path', draw({ d: 'M18.6 22.8c3.6-1.6 23.2-1.6 26.8 0' })],
+            ['circle', draw({ cx: 27.2, cy: 21.2, r: 3.8, fill: '#cfe3f7', 'stroke-width': 2.2 })],
+            ['circle', draw({ cx: 36.8, cy: 21.2, r: 3.8, fill: '#cfe3f7', 'stroke-width': 2.2 })],
+            ['path', { d: 'M25.8 19.8l1.4-1M35.4 19.8l1.4-1', stroke: '#fff', 'stroke-width': 1.2, 'stroke-linecap': 'round' }],
+            // the right arm holding the flask
+            ['path', draw({ d: 'M45.8 35.2c1.3-.8 2.6-.6 3.4.5' })],
+            ['path', { d: flaskShape, fill: '#fff' }],
+            ['rect', { x: 43, y: 44.4, width: 14, height: 6, fill: '#4fa3e0', 'clip-path': 'url(#ldc-flask-inside)' }],
+            ['path', draw({ d: 'M47.4 36h5.2' + flaskShape.replace('z', ''), 'stroke-width': 2.1 })],
+        ];
+
+        // The view box is centred on the ghost; he floats a little lower than the middle
+        return node('svg', { viewBox: '2 2.4 60 60', class: 'ldc-avatar', 'aria-hidden': 'true', focusable: 'false' }, [
+            ['defs', {}, [['clipPath', { id: 'ldc-flask-inside' }, [['path', { d: flaskShape }]]]]],
+            ['ellipse', { cx: 32, cy: 56.6, rx: 10, ry: 1.8, fill: navy, opacity: '.18' }],
+            ['g', { transform: 'translate(0 1.6) rotate(-8 32 32)' }, ghost],
+            ['path', draw({ d: 'M9.5 31.6c-1.2 2-1.2 4 0 6M6 30.1c-2 3-2 6 0 9', 'stroke-width': 1.8, opacity: '.55' })],
+        ]);
     }
 
     function flag(code) {
@@ -395,7 +467,7 @@
         else log.scrollTop = top;
     }
 
-    // The three bouncing dots while Casper "types"
+    // The three bouncing dots while Kasper "types"
     function typing(on) {
         if (on && !typingBubble) {
             var dots = el('div', { class: 'ldc-msg ldc-bot ldc-typing', 'aria-label': '…' });
@@ -446,9 +518,11 @@
     // Returns a promise that ends when everything is on screen.
     function showAnswer(answer) {
         var steps = [];
-        // Casper switched language (the customer writes in another language): follow along
+        // Kasper switched language (the customer writes in another language): follow along
         if (answer.language && answer.language !== language) applyLanguage(answer.language);
         if (answer.contactLabel) contactLabel = answer.contactLabel;
+        if (answer.contactTopic) contactTopic = answer.contactTopic;
+        if (answer.contactSubjects) contactSubjects = answer.contactSubjects;
         if (answer.text) steps.push(function () { show(answer.text, 'bot'); });
         if (answer.products) steps.push(function () { productCards(answer.products); return pause(250 + answer.products.length * 90); });
         if (answer.order) steps.push(function () { orderCard(answer.order); return pause(350); });
@@ -460,9 +534,17 @@
                 }));
             });
         }
-        if (answer.contactOffer) steps.push(function () { row([{ label: contactLabel || L.send, onClick: contactForm }]); return pause(150); });
-        if (answer.followUp) steps.push(typeThen(answer.followUp));
-        if (answer.quickReplies) {
+        if (answer.contactOffer) {
+            steps.push(function () {
+                row([{ label: contactLabel || L.send, onClick: contactForm }]);
+                // e.g. cancelling an order: Kasper cannot do it, so the form opens right away
+                if (answer.openContactForm) contactForm();
+                return pause(150);
+            });
+        }
+        // When the form opened by itself, the customer fills it in first: no "anything else?" under it
+        if (answer.followUp && !answer.openContactForm) steps.push(typeThen(answer.followUp));
+        if (answer.quickReplies && !answer.openContactForm) {
             steps.push(function () {
                 row(answer.quickReplies.map(function (label) {
                     return { label: label, onClick: function () { ask(label); } };
@@ -631,6 +713,40 @@
         add(wrap);
     }
 
+    // Kasper cannot be reached (NAS or internet down). Shown once: the shop's standard contact details
+    // (they are in this file, so they work without the server), buttons to call or e-mail, and "try again".
+    // Typing is switched off until Kasper answers again.
+    var isOffline = false;
+
+    function offline() {
+        typing(false);
+        if (isOffline) return;
+        isOffline = true;
+        input.disabled = true;
+        send.disabled = true;
+        input.placeholder = L.offlinePlaceholder;
+        show(L.offline, 'bot');
+        var links = el('div', { class: 'ldc-row' });
+        links.appendChild(el('a', { class: 'ldc-chip', href: 'tel:+31255700210' }, L.callUs));
+        links.appendChild(el('a', { class: 'ldc-chip', href: 'mailto:info@laboratoriumdiscounter.nl' }, L.mailUs));
+        var retry = el('button', { class: 'ldc-chip', type: 'button' }, L.retry);
+        retry.addEventListener('click', function () {
+            retry.disabled = true;
+            backOnline();
+            if (!conversationId) start();
+            else request('/language', { conversationId: conversationId, language: language }).then(showAnswer).catch(offline);
+        });
+        links.appendChild(retry);
+        add(links);
+    }
+
+    function backOnline() {
+        isOffline = false;
+        input.disabled = false;
+        send.disabled = false;
+        input.placeholder = L.placeholder;
+    }
+
     function start() {
         busy = true;
         anchor = null;
@@ -640,7 +756,7 @@
                 contactLabel = answer.contactLabel || contactLabel;
                 return showAnswer(answer);
             })
-            .catch(function () { show(L.offline, 'bot'); })
+            .catch(offline)
             .then(function () { busy = false; });
     }
 
@@ -651,14 +767,17 @@
         busy = true;
         request('/message', { conversationId: conversationId, text: text })
             .then(function (answer) {
+                // The conversation is gone (server restarted, or 2 hours without activity): start a new one
+                // quietly and answer the same message, so the customer does not notice
                 if (answer.__status === 404) {
-                    show(L.restart, 'bot');
-                    busy = false;
-                    return start();
+                    return request('/start', { language: language, country: country }).then(function (fresh) {
+                        conversationId = fresh.conversationId;
+                        return request('/message', { conversationId: conversationId, text: text });
+                    }).then(showAnswer);
                 }
                 return showAnswer(answer);
             })
-            .catch(function () { show(L.offline, 'bot'); })
+            .catch(offline)
             .then(function () { busy = false; });
     }
 
@@ -669,7 +788,7 @@
         busy = true;
         request('/action', { conversationId: conversationId, action: id })
             .then(showAnswer)
-            .catch(function () { show(L.offline, 'bot'); })
+            .catch(offline)
             .then(function () { busy = false; });
     }
 
@@ -677,14 +796,21 @@
         var formBox = el('form', { class: 'ldc-contact' });
         var name = el('input', { type: 'text', placeholder: L.name, maxlength: '100', required: 'required', autocomplete: 'name' });
         var email = el('input', { type: 'email', placeholder: L.email, maxlength: '254', required: 'required', autocomplete: 'email' });
+        // Subject: a dropdown with the fitting subject already chosen, "Other question" last
+        var subject = el('select', { 'aria-label': L.subject });
+        for (var key in contactSubjects || { other: L.subject }) {
+            var option = el('option', { value: key }, (contactSubjects || { other: L.subject })[key]);
+            if (key === contactTopic) option.selected = true;
+            subject.appendChild(option);
+        }
         var message = el('textarea', { placeholder: L.message, maxlength: '3000', required: 'required' });
         var buttons = el('div', { class: 'ldc-row' });
         var submit = el('button', { class: 'ldc-chip', type: 'submit' }, L.send);
-        var cancel = el('button', { class: 'ldc-chip', type: 'button' }, L.cancel);
+        var cancel = el('button', { class: 'ldc-chip', type: 'button' }, L.close); // not 'cancel': confusing in a cancel-my-order form
         buttons.appendChild(submit);
         buttons.appendChild(cancel);
         var intro = el('p', { class: 'ldc-contact-intro' }, L.formIntro);
-        [intro, name, email, message, buttons].forEach(function (node) { formBox.appendChild(node); });
+        [intro, subject, name, email, message, buttons].forEach(function (node) { formBox.appendChild(node); });
         add(formBox);
         name.focus();
 
@@ -692,14 +818,14 @@
         formBox.addEventListener('submit', function (event) {
             event.preventDefault();
             submit.disabled = true;
-            post('/contact', { conversationId: conversationId, name: name.value, email: email.value, message: message.value })
+            post('/contact', { conversationId: conversationId, topic: subject.value, name: name.value, email: email.value, message: message.value })
                 .then(function (answer) {
                     formBox.remove();
                     show(answer.text || L.offline, 'bot');
                 })
                 .catch(function () {
                     submit.disabled = false;
-                    show(L.offline, 'bot');
+                    offline();
                 });
         });
     }

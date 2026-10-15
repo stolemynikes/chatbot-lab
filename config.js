@@ -11,7 +11,7 @@ export const PORT = Number(env('PORT', '8090'));
 
 // Which "brain" answers the customer:
 //   test   = fixed answers and keyword matching, no AI (free, for testing the whole flow)
-//   claude = Claude reads the question, Casper answers with the same fixed texts (needs ANTHROPIC_API_KEY)
+//   claude = Claude reads the question, Kasper answers with the same fixed texts (needs ANTHROPIC_API_KEY)
 export const CHAT_MODE = env('CHAT_MODE', 'test');
 
 // Claude (only used when CHAT_MODE=claude)

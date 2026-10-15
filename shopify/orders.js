@@ -163,17 +163,35 @@ function houseBrandFilter(settings) {
     return parts.length > 0 ? `(${parts.join(' OR ')})` : '';
 }
 
-// Searches products by name. Only letters, digits and a few signs are kept,
-// so the customer's text cannot change the search itself.
-// country: the visitor's country (e.g. "NL"), for the delivery time
-export async function findProducts(settings, { text, useFake, country = 'NL' }) {
-    const words = String(text || '')
+// Words that are never part of a product name ("wat is de voorraad van dit" must not search for "wat van").
+// Small words in NL, EN, DE and FR; product names, CAS numbers and article numbers are never in this list.
+const FILLER_WORDS = new Set(
+    `wat welke welk hoe hoeveel waar wanneer waarom wie is zijn was er het de een dit deze die dat daar hier van voor
+    met naar op in uit aan bij om tot of en ook nog wel niet geen meer ik je jij u uw mijn we wij jullie julie hebben heb
+    hebt heeft kan kunnen kun mag wil willen zou graag even zit zitten staat staan nu momenteel product producten artikel
+    the a an is are was this that these those it its of for with to in on at by and or any some do does have has you your
+    i my we can could would please how much many what which where when there still now currently item items one ones
+    thing things stuff ding dingen spul ding
+    der die das ein eine ist sind von mit fur zu im am und oder habt haben ihr sie ich mein noch auch dieses diese welche
+    le la les un une des du de est sont avec pour dans et ou vous avez je mon ce cette ces quel quelle encore`.split(/\s+/),
+);
+
+// The words of a message that can be part of a product name (lowercase, at most 5).
+// Only letters, digits and a few signs are kept, so the customer's text cannot change the search itself.
+export function productWords(text) {
+    return String(text || '')
         .normalize('NFC')
         .replace(/[^\p{L}\p{N}\s,.%µ+-]/gu, ' ')
         .split(/\s+/)
         .map((word) => word.toLowerCase().replace(/^[-+]+|[.,]+$/g, ''))
-        .filter((word) => word.length >= 2)
+        .filter((word) => word.length >= 2 && !FILLER_WORDS.has(word.normalize('NFD').replace(/[̀-ͯ]/g, '')))
         .slice(0, 5);
+}
+
+// Searches products by name.
+// country: the visitor's country (e.g. "NL"), for the delivery time
+export async function findProducts(settings, { text, useFake, country = 'NL' }) {
+    const words = productWords(text);
     if (words.length === 0) return [];
 
     // Dutch names are often one word ("Kaliumjodide") while customers type two ("kalium jodide"),

@@ -85,6 +85,7 @@ const product = (title, handle, vendor, group, sizes, extra = {}) => ({
 
 export const fakeProducts = [
     product('Ethanol 99,8+% Gedenatureerd', 'ethanol-99-8', 'Laboratoriumdiscounter', 'stock', [size('ETH-500', 12, { adr: true })]),
+    product('Kaliumchloride 99,5+%', 'kaliumchloride-99-5', 'Laboratoriumdiscounter', 'stock', [size('KCL-1', 7)]),
     product('Trechter Micro', 'trechter-micro', 'Carl Roth', 'roth', [size('TR-1', 0)]),
     product('Pipettips ROTILABO 10 µl', 'pipettips-10', 'Carl Roth', 'roth', [size('PT-10', 40)]),
     product('Kaliumjodide 99,5+%', 'kaliumjodide-99-5', 'Diverse merken', 'other', [size('KI-995', 3)]),

@@ -43,8 +43,8 @@ app.use((req, res, next) => {
     next();
 });
 
-// Only the shop's own website may talk to the chat API from a browser
-app.use('/api', (req, res, next) => {
+// Only the shop's own website may talk to the chat API (and the health check) from a browser
+app.use(['/api', '/health'], (req, res, next) => {
     const origin = req.get('origin');
     if (origin && ALLOWED_ORIGINS.includes(origin)) {
         res.set({ 'Access-Control-Allow-Origin': origin, 'Access-Control-Allow-Headers': 'Content-Type', Vary: 'Origin' });

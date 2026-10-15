@@ -6,11 +6,11 @@ export const SUPPORTED_LANGUAGES = ['nl', 'en', 'de', 'fr'];
 const texts = {
     nl: {
         languageSwitched: 'Prima, we gaan verder in het Nederlands.',
-        greeting: "Hoi! Ik ben Casper, de chatbot van Laboratoriumdiscounter. Waarmee kan ik je helpen?",
+        greeting: "Hoi! Ik ben Kasper, de chatbot van Laboratoriumdiscounter. Waarmee kan ik je helpen?",
         followUp: "Kan ik je nog ergens anders mee helpen?",
         noThanks: "Nee, bedankt",
         goodbye: "Graag gedaan! Fijne dag nog. Je kunt de chat altijd weer openen als je nog een vraag hebt.",
-        welcome: 'Hoi! Ik ben Casper 👋 Kies hieronder een onderwerp of typ zelf je vraag.',
+        welcome: 'Hoi! Ik ben Kasper 👋 Kies hieronder een onderwerp of typ zelf je vraag.',
         refuseChemical:
             'Sorry, vragen over het gebruik, mengen, bereiden of de werking van chemicaliën kan ik niet beantwoorden. Informatie over veilig gebruik vind je in het veiligheidsinformatieblad (SDS) bij het product. Heb je een andere vraag over je bestelling?',
         refuseHarm: 'Hier kan ik je niet mee helpen. Ik beantwoord alleen vragen over bestellingen, verzending, retour en facturen.',
@@ -26,7 +26,7 @@ const texts = {
         orderNotFound: 'Ik kan geen bestelling vinden met dit ordernummer en e-mailadres. Controleer beide gegevens en probeer het opnieuw.',
         tooManyLookups: 'Het lukt niet om je bestelling te vinden. Stuur ons een bericht, dan zoeken we het voor je uit.',
         lookupError: 'Ik kan je bestelling op dit moment niet ophalen. Probeer het later nog eens of stuur ons een bericht.',
-        askProduct: 'Van welk product wil je de beschikbaarheid weten? Typ de productnaam.',
+        askProduct: 'Over welk product gaat het? Je kunt de naam, het artikelnummer of het CAS-nummer intypen, dan zoek ik het voor je op.',
         productNone: 'Ik kon geen product vinden met die naam. Probeer een andere zoekterm of kijk in de webshop.',
         productIntro: 'Dit heb ik gevonden:',
         splitQuestion:
@@ -38,6 +38,8 @@ const texts = {
         splitNotPossible: 'Voor deze bestelling kan ik de verzendkeuze niet (meer) aanpassen. Stuur ons een bericht als je iets wilt wijzigen.',
         contactOffer: 'Kom je er niet uit? Stuur ons een bericht, dan helpen we je per e-mail verder.',
         contactButton: '✉️ Vraag het een medewerker',
+        // Subjects in the contact form dropdown, in this order. Kasper picks the one that fits the question.
+        subjects: {"order":"Vraag over mijn bestelling","cancel":"Bestelling annuleren","returns":"Retour","invoice":"Vraag over mijn factuur","shipping":"Vraag over verzending","payment":"Vraag over betalen","product":"Vraag over een product","business":"Zakelijk / offerte","discount":"Offerte / korting","sds":"Veiligheidsblad / analysecertificaat","account":"Vraag over mijn account","other":"Overige vraag"},
         contactThanks: 'Bedankt! We hebben je bericht ontvangen en reageren zo snel mogelijk per e-mail.',
         contactError: 'Je bericht kon niet worden verstuurd. Mail ons direct op info@laboratoriumdiscounter.nl.',
         contactLimit: 'Je hebt al een bericht gestuurd. We reageren zo snel mogelijk.',
@@ -54,11 +56,11 @@ const texts = {
     },
     en: {
         languageSwitched: "Sure, let's continue in English.",
-        greeting: "Hi there! I'm Casper, the chatbot of Laboratoriumdiscounter. How can I help you?",
+        greeting: "Hi there! I'm Kasper, the chatbot of Laboratoriumdiscounter. How can I help you?",
         followUp: "Is there anything else I can help you with?",
         noThanks: "No, thanks",
         goodbye: "You're welcome! Have a nice day. You can open the chat again any time.",
-        welcome: "Hi! I'm Casper 👋 Pick a topic below or type your own question.",
+        welcome: "Hi! I'm Kasper 👋 Pick a topic below or type your own question.",
         refuseChemical:
             "Sorry, I can't answer questions about using, mixing, preparing or the effects of chemicals. You can find information on safe use in the safety data sheet (SDS) on the product page. Do you have another question about your order?",
         refuseHarm: "I can't help with that. I only answer questions about orders, shipping, returns and invoices.",
@@ -74,7 +76,7 @@ const texts = {
         orderNotFound: "I can't find an order with this order number and e-mail address. Please check both and try again.",
         tooManyLookups: "I can't find your order. Send us a message and we'll look into it for you.",
         lookupError: "I can't fetch your order right now. Please try again later or send us a message.",
-        askProduct: 'Which product would you like to check? Type the product name.',
+        askProduct: 'Which product do you mean? You can type the name, article number or CAS number and I will look it up for you.',
         productNone: "I couldn't find a product with that name. Try another search term or browse the shop.",
         productIntro: 'This is what I found:',
         splitQuestion:
@@ -86,6 +88,8 @@ const texts = {
         splitNotPossible: "I can't change the shipping choice for this order (anymore). Send us a message if you'd like to change something.",
         contactOffer: "Can't find what you need? Send us a message and we'll help you by e-mail.",
         contactButton: '✉️ Ask our team',
+        // Subjects in the contact form dropdown, in this order. Kasper picks the one that fits the question.
+        subjects: {"order":"Question about my order","cancel":"Cancel my order","returns":"Return","invoice":"Question about my invoice","shipping":"Question about shipping","payment":"Question about payment","product":"Question about a product","business":"Business / quote","discount":"Quote / discount","sds":"Safety data sheet / certificate of analysis","account":"Question about my account","other":"Other question"},
         contactThanks: "Thank you! We've received your message and will reply by e-mail as soon as possible.",
         contactError: 'Your message could not be sent. Please e-mail us at info@laboratoriumdiscounter.nl.',
         contactLimit: "You've already sent a message. We'll reply as soon as possible.",
@@ -102,11 +106,11 @@ const texts = {
     },
     de: {
         languageSwitched: 'Gerne, wir machen auf Deutsch weiter.',
-        greeting: "Hallo! Ich bin Casper, der Chatbot von Laboratoriumdiscounter. Wie kann ich Ihnen helfen?",
+        greeting: "Hallo! Ich bin Kasper, der Chatbot von Laboratoriumdiscounter. Wie kann ich Ihnen helfen?",
         followUp: "Kann ich Ihnen sonst noch helfen?",
         noThanks: "Nein, danke",
         goodbye: "Gern geschehen! Einen schönen Tag noch. Sie können den Chat jederzeit wieder öffnen.",
-        welcome: 'Hallo! Ich bin Casper 👋 Wählen Sie unten ein Thema oder schreiben Sie Ihre Frage.',
+        welcome: 'Hallo! Ich bin Kasper 👋 Wählen Sie unten ein Thema oder schreiben Sie Ihre Frage.',
         refuseChemical:
             'Leider kann ich keine Fragen zur Verwendung, zum Mischen, zur Herstellung oder zur Wirkung von Chemikalien beantworten. Informationen zur sicheren Verwendung finden Sie im Sicherheitsdatenblatt (SDB) auf der Produktseite. Haben Sie eine andere Frage zu Ihrer Bestellung?',
         refuseHarm: 'Dabei kann ich nicht helfen. Ich beantworte nur Fragen zu Bestellungen, Versand, Rücksendungen und Rechnungen.',
@@ -122,7 +126,7 @@ const texts = {
         orderNotFound: 'Ich finde keine Bestellung mit dieser Bestellnummer und E-Mail-Adresse. Bitte prüfen Sie beides.',
         tooManyLookups: 'Ich kann Ihre Bestellung nicht finden. Senden Sie uns eine Nachricht, wir kümmern uns darum.',
         lookupError: 'Ich kann Ihre Bestellung gerade nicht abrufen. Bitte versuchen Sie es später erneut oder senden Sie uns eine Nachricht.',
-        askProduct: 'Für welches Produkt möchten Sie die Verfügbarkeit prüfen? Geben Sie den Produktnamen ein.',
+        askProduct: 'Um welches Produkt geht es? Sie können den Namen, die Artikelnummer oder die CAS-Nummer eingeben, dann suche ich es für Sie heraus.',
         productNone: 'Ich habe kein Produkt mit diesem Namen gefunden. Versuchen Sie einen anderen Suchbegriff.',
         productIntro: 'Das habe ich gefunden:',
         splitQuestion:
@@ -134,6 +138,8 @@ const texts = {
         splitNotPossible: 'Für diese Bestellung kann ich die Versandwahl nicht (mehr) ändern. Senden Sie uns eine Nachricht.',
         contactOffer: 'Kommen Sie nicht weiter? Senden Sie uns eine Nachricht, wir helfen Ihnen per E-Mail.',
         contactButton: '✉️ Einen Mitarbeiter fragen',
+        // Subjects in the contact form dropdown, in this order. Kasper picks the one that fits the question.
+        subjects: {"order":"Frage zu meiner Bestellung","cancel":"Bestellung stornieren","returns":"Rücksendung","invoice":"Frage zu meiner Rechnung","shipping":"Frage zum Versand","payment":"Frage zur Zahlung","product":"Frage zu einem Produkt","business":"Geschäftlich / Angebot","discount":"Angebot / Rabatt","sds":"Sicherheitsdatenblatt / Analysenzertifikat","account":"Frage zu meinem Konto","other":"Sonstige Frage"},
         contactThanks: 'Vielen Dank! Wir haben Ihre Nachricht erhalten und antworten so schnell wie möglich per E-Mail.',
         contactError: 'Ihre Nachricht konnte nicht gesendet werden. Bitte schreiben Sie an info@laboratoriumdiscounter.nl.',
         contactLimit: 'Sie haben bereits eine Nachricht gesendet. Wir antworten so schnell wie möglich.',
@@ -150,11 +156,11 @@ const texts = {
     },
     fr: {
         languageSwitched: "D'accord, continuons en français.",
-        greeting: "Bonjour ! Je suis Casper, le chatbot de Laboratoriumdiscounter. Comment puis-je vous aider ?",
+        greeting: "Bonjour ! Je suis Kasper, le chatbot de Laboratoriumdiscounter. Comment puis-je vous aider ?",
         followUp: "Puis-je vous aider pour autre chose ?",
         noThanks: "Non, merci",
         goodbye: "Avec plaisir ! Bonne journée. Vous pouvez rouvrir le chat à tout moment.",
-        welcome: 'Bonjour ! Je suis Casper 👋 Choisissez un sujet ci-dessous ou écrivez votre question.',
+        welcome: 'Bonjour ! Je suis Kasper 👋 Choisissez un sujet ci-dessous ou écrivez votre question.',
         refuseChemical:
             "Désolé, je ne peux pas répondre aux questions sur l'utilisation, le mélange, la préparation ou les effets des produits chimiques. Vous trouverez les informations sur l'utilisation sûre dans la fiche de données de sécurité (FDS) sur la page du produit. Avez-vous une autre question sur votre commande ?",
         refuseHarm: "Je ne peux pas vous aider avec cela. Je réponds uniquement aux questions sur les commandes, la livraison, les retours et les factures.",
@@ -170,7 +176,7 @@ const texts = {
         orderNotFound: "Je ne trouve aucune commande avec ce numéro et cette adresse e-mail. Veuillez vérifier les deux.",
         tooManyLookups: "Je ne trouve pas votre commande. Envoyez-nous un message et nous nous en occuperons.",
         lookupError: "Je ne peux pas récupérer votre commande pour le moment. Réessayez plus tard ou envoyez-nous un message.",
-        askProduct: 'Pour quel produit souhaitez-vous vérifier la disponibilité ? Tapez le nom du produit.',
+        askProduct: "De quel produit s'agit-il ? Vous pouvez saisir le nom, la référence ou le numéro CAS, et je le recherche pour vous.",
         productNone: "Je n'ai trouvé aucun produit portant ce nom. Essayez un autre terme.",
         productIntro: "Voici ce que j'ai trouvé :",
         splitQuestion:
@@ -182,6 +188,8 @@ const texts = {
         splitNotPossible: "Je ne peux pas (plus) modifier le choix d'expédition pour cette commande. Envoyez-nous un message.",
         contactOffer: "Vous ne trouvez pas de réponse ? Envoyez-nous un message, nous vous aiderons par e-mail.",
         contactButton: '✉️ Demander à un conseiller',
+        // Subjects in the contact form dropdown, in this order. Kasper picks the one that fits the question.
+        subjects: {"order":"Question sur ma commande","cancel":"Annuler ma commande","returns":"Retour","invoice":"Question sur ma facture","shipping":"Question sur la livraison","payment":"Question sur le paiement","product":"Question sur un produit","business":"Professionnel / devis","discount":"Devis / remise","sds":"Fiche de données de sécurité / certificat d'analyse","account":"Question sur mon compte","other":"Autre question"},
         contactThanks: 'Merci ! Nous avons bien reçu votre message et répondrons par e-mail dès que possible.',
         contactError: "Votre message n'a pas pu être envoyé. Écrivez-nous à info@laboratoriumdiscounter.nl.",
         contactLimit: 'Vous avez déjà envoyé un message. Nous répondrons dès que possible.',

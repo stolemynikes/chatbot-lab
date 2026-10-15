@@ -11,6 +11,15 @@ import { rateLimit, visitorBrake, visitorKey } from './rateLimit.js';
 //   POST /api/chat/message  { conversationId, text }           -> the bot's answer
 //   POST /api/chat/action   { conversationId, action }         -> partial shipping buttons
 //   POST /api/chat/contact  { conversationId, name, email, message } -> contact form
+// The subject dropdown of the contact form: its texts, and the subject that fits the question
+// ("cancel" after "I want to cancel my order"; "order" when Kasper knows the order; otherwise "other")
+export function contactSubject(conversation, answer) {
+    if (!answer.contactOffer) return {};
+    const subjects = t(conversation.language).subjects;
+    const topic = subjects[answer.contactTopic] ? answer.contactTopic : conversation.order ? 'order' : 'other';
+    return { contactTopic: topic, contactSubjects: subjects };
+}
+
 export function createChatRoute({ conversations, reply, settings, sendContactRequest }) {
     const router = express.Router();
     const lookupBrake = visitorBrake({ max: 10, minutes: 60, label: 'Order lookups blocked' });
@@ -66,7 +75,7 @@ export function createChatRoute({ conversations, reply, settings, sendContactReq
                 answer.question ? `\n${answer.question}` : '',
             ].join('');
             conversation.transcript.push({ from: 'bot', text: answer.text + cards });
-            res.send({ ...answer, language: conversation.language, contactLabel: t(conversation.language).contactButton });
+            res.send({ ...answer, ...contactSubject(conversation, answer), language: conversation.language, contactLabel: t(conversation.language).contactButton });
         } catch (error) {
             console.log(`Chat error: ${error.stack || error.message}`);
             res.status(500).send({ text: words.lookupError, contactOffer: true });
@@ -121,12 +130,16 @@ export function createChatRoute({ conversations, reply, settings, sendContactReq
         const name = String(req.body.name || '').replace(/[\r\n\t]/g, ' ').trim().slice(0, 100);
         const email = cleanEmail(req.body.email);
         const message = String(req.body.message || '').trim().slice(0, 3000);
+        // Only a subject from the list (no free text in the e-mail subject line), plus the order Kasper knows
+        const subjects = t(conversation.language).subjects;
+        const topic = Object.hasOwn(subjects, req.body.topic) ? req.body.topic : 'other';
+        const subject = conversation.order ? `${subjects[topic]} (${conversation.order.name})` : subjects[topic];
         if (!name || !email || !message) return res.status(400).send({ text: words.badEmail });
 
         conversation.contactRequests += 1;
         contactBrake.count(visitor);
         try {
-            await sendContactRequest({ name, email, message, conversation });
+            await sendContactRequest({ name, email, subject, message, conversation });
             res.send({ text: words.contactThanks });
         } catch (error) {
             console.log(`Contact request failed: ${error.message}`);

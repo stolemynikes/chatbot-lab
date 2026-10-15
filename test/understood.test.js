@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { Conversations } from '../chat/conversations.js';
 import { testReply } from '../chat/testBrain.js';
 
-// Claude mode, without calling Claude: these tests hand Casper a filled-in form directly
+// Claude mode, without calling Claude: these tests hand Kasper a filled-in form directly
 
 const form = (intent, extra = {}) => ({ intent, faqTopic: 'none', productQuery: '', orderNumber: null, email: null, ...extra });
 
@@ -33,7 +33,7 @@ test('when Claude\'s name finds nothing, the customer\'s own words are tried', a
     assert.equal(answer.products[0].title, 'Ethanol 99,8+% Gedenatureerd');
 });
 
-test('Claude can only make Casper stricter', async () => {
+test('Claude can only make Kasper stricter', async () => {
     const { say } = setup();
     // The keyword filter lets this through, Claude flags it: refused
     assert.match((await say('Wat doet dit met glycerine?', form('chemical_advice'))).text, /niet beantwoorden/);
@@ -56,7 +56,7 @@ test('order number and e-mail found by Claude still go through the normal check'
 test('FAQ topic, greeting, goodbye, and unclear falls back to keywords', async () => {
     const { say } = setup();
     assert.match((await say('how long to Belgium?', form('faq', { faqTopic: 'shipping' }))).text, /werkdagen/);
-    assert.match((await say('yo', form('greeting'))).text, /Ik ben Casper/);
+    assert.match((await say('yo', form('greeting'))).text, /Ik ben Kasper/);
     assert.match((await say('cheers', form('goodbye'))).text, /Graag gedaan/);
     assert.match((await say('Hoe kan ik retourneren?', form('unclear'))).text, /retour/i);
 });
@@ -66,11 +66,12 @@ test('a long message is never "just a greeting", off-topic gets "not understood"
     assert.match((await say('Ik wil graag goonen', form('greeting'))).text, /begreep ik niet/);
     assert.match((await say('jij bent dom', form('off_topic'))).text, /begreep ik niet/);
     assert.match((await say('goonen', form('greeting'))).text, /begreep ik niet/);
-    assert.match((await say('hoi casper', form('greeting'))).text, /Ik ben Casper/);
-    assert.match((await say('Dzień dobry', form('greeting'))).text, /Ik ben Casper/);
+    assert.match((await say('hoi kasper', form('greeting'))).text, /Ik ben Kasper/);
+    assert.match((await say('hoi casper', form('greeting'))).text, /Ik ben Kasper/);
+    assert.match((await say('Dzień dobry', form('greeting'))).text, /Ik ben Kasper/);
 });
 
-test('a new question while Casper waits for an order number', async () => {
+test('a new question while Kasper waits for an order number', async () => {
     const { conversation, say } = setup();
     await say('waar is mijn bestelling', form('order_status'));
     assert.equal(conversation.state, 'orderNumber');

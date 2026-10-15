@@ -1,20 +1,21 @@
 import { checkMessage, normalize } from '../safety/guard.js';
 import { t } from '../safety/texts.js';
 import { faq, faqAnswer } from '../content/faq.js';
-import { findOrderNumber, findEmail, findOrder, findProducts } from '../shopify/orders.js';
+import { findOrderNumber, findEmail, findOrder, findProducts, productWords } from '../shopify/orders.js';
 
-// Casper's answers. Always the fixed texts and cards, never text written by AI.
+// Kasper's answers. Always the fixed texts and cards, never text written by AI.
 // How the question is understood:
 //   test mode   - keywords (free, no AI)
 //   claude mode - Claude fills in a form (`understood`, see chat/interpreter.js); when Claude is not
 //                 available or not sure, the keywords are used as before
 //
-// reply() returns: { text, followUp?, quickReplies?: [label], buttons?: [{ id, label }], contactOffer?: true }
+// reply() returns: { text, followUp?, quickReplies?: [label], buttons?: [{ id, label }], contactOffer?: true,
+//   contactTopic?: subject for the contact form (see `subjects` in safety/texts.js), openContactForm?: true }
 // followUp is a second message ("anything else?") shown after a finished answer.
 
 const orderWords = /\b(bestelling|bestellingen|order|orders|zending|pakket|pakketje|track|trace|tracking|bestellung|sendung|paket|commande|colis|suivi|backorder)\b/;
 // Only a greeting, nothing else ("hoi", "hallo!", "goedemorgen", "hi there")
-const greetingWords = /^(hoi|hoii+|hallo|hallo daar|hey|heey+|hi|hi there|hello|hello there|hai|yo|goede(morgen|middag|navond)|goeie(morgen|middag|navond)|good (morning|afternoon|evening)|guten (morgen|tag|abend)|moin|servus|bonjour|bonsoir|salut|hola|ciao)( casper)?[ ,.!]*$/;
+const greetingWords = /^(hoi|hoii+|hallo|hallo daar|hey|heey+|hi|hi there|hello|hello there|hai|yo|goede(morgen|middag|navond)|goeie(morgen|middag|navond)|good (morning|afternoon|evening)|guten (morgen|tag|abend)|moin|servus|bonjour|bonsoir|salut|hola|ciao)( [ck]asper)?[ ,.!]*$/;
 // How a greeting starts, in the EU languages (without accents: cześć -> czesc, olá -> ola)
 const greetingStart = /^(hoi|hallo|hey|hi|hello|hai|yo|goede|goeie|good|guten|moin|servus|gruss|bonjour|bonsoir|salut|hola|buenos|buenas|buongiorno|buonasera|ciao|salve|ola|bom dia|boa tarde|hej|hejsan|moi|terve|hei|goddag|god morgen|czesc|dzien dobry|ahoj|dobry den|dobr|szia|jo napot|buna|tere|labas|sveiki|zdravo|dober dan|dobar dan|zdravei|zdraveite|γεια|καλημερα|здравей|добър ден|dia dhuit|bongu|merhaba)\b/;
 const goodbyeWords = /^(nee|neen|no|nein|non)?[ ,.!]*(dank je( wel)?|dankjewel|bedankt|thanks|thank you|danke( schon)?|merci( beaucoup)?|dat was (het|alles)|that'?s (it|all)|das wars?|c'?est tout)?[ ,.!]*$/;
@@ -31,7 +32,7 @@ export async function testReply(conversation, text, deps, understood = null) {
         if (safety.category === 'selfHarm') return { text: words.selfHarm };
         if (safety.category === 'emergency') return { text: words.emergency };
         if (safety.category === 'harm') return { text: words.refuseHarm };
-        return { text: words.refuseChemical, contactOffer: true };
+        return { text: words.refuseChemical, contactOffer: true, contactTopic: 'product' };
     }
 
     // 2. What Claude understood (claude mode only)
@@ -49,20 +50,28 @@ export async function testReply(conversation, text, deps, understood = null) {
     }
     if (conversation.state === 'product') {
         conversation.state = null;
-        return productAnswer(conversation, text, deps);
+        if (!isNewQuestion(normalize(text))) return productAnswer(conversation, text, deps);
     }
 
-    // 4. A new question
+    // 4. A new question.
+    // "Mijn bestelling annuleren / retourneren / de factuur van mijn bestelling" is about cancelling, returns or the
+    // invoice, not about where the order is: those topics go first.
+    const topicFirst = bestFaq(plain);
+    if (topicFirst && ['cancel', 'returns', 'invoice'].includes(topicFirst.id)) {
+        conversation.misunderstood = 0;
+        return finished(faqReply(topicFirst, conversation.language), words);
+    }
     if (orderWords.test(plain) || (findOrderNumber(text) && findEmail(text))) return startOrderLookup(conversation, text, deps);
 
     if (stockWords.test(plain)) {
+        // "Is ethanol op voorraad?" -> search "ethanol". "Wat is de voorraad van dit?" -> no product name: ask for it
         const product = stripStockWords(plain);
-        if (product.length >= 3) return productAnswer(conversation, product, deps);
+        if (productWords(product).length > 0) return productAnswer(conversation, product, deps);
         conversation.state = 'product';
         return { text: words.askProduct };
     }
 
-    // Just "hoi": Casper introduces himself and shows the topics
+    // Just "hoi": Kasper introduces himself and shows the topics
     if (greetingWords.test(plain)) {
         return { text: words.greeting, quickReplies: words.topics };
     }
@@ -76,11 +85,24 @@ export async function testReply(conversation, text, deps, understood = null) {
     const entry = bestFaq(plain);
     if (entry) {
         conversation.misunderstood = 0;
-        return finished({ text: faqAnswer(entry, conversation.language), contactOffer: entry.offerContact || undefined }, words);
+        return finished(faqReply(entry, conversation.language), words);
     }
 
-    // 5. Not understood
+    // 5. Only a product name ("Kaliumchloride", "ethanol 96%"): show that product
+    if (looksLikeProductName(text)) {
+        const answer = await productAnswer(conversation, text, deps);
+        if (answer.products) return answer;
+    }
+
+    // 6. Not understood
     return notUnderstood(conversation);
+}
+
+// A short message with at most 3 words that can be part of a product name, and no question about anything else
+function looksLikeProductName(text) {
+    const allWords = String(text).trim().split(/\s+/);
+    const words = productWords(text);
+    return allWords.length <= 4 && words.length >= 1 && words.length <= 3;
 }
 
 // "Sorry, I did not understand": show the topics, and after two misses offer the contact form
@@ -97,15 +119,15 @@ async function understoodReply(conversation, text, deps, understood) {
     // The order number / e-mail Claude found, added to the text so the normal (checked) lookup reads them
     const withDetails = [text, orderNumber, email].filter(Boolean).join(' ');
 
-    // Claude is a second safety check: it can only make Casper stricter, never less strict
-    const refusal = { chemical_advice: { text: words.refuseChemical, contactOffer: true }, harmful: { text: words.refuseHarm }, emergency: { text: words.emergency }, self_harm: { text: words.selfHarm } }[intent];
+    // Claude is a second safety check: it can only make Kasper stricter, never less strict
+    const refusal = { chemical_advice: { text: words.refuseChemical, contactOffer: true, contactTopic: 'product' }, harmful: { text: words.refuseHarm }, emergency: { text: words.emergency }, self_harm: { text: words.selfHarm } }[intent];
     if (refusal) {
         stopOrderLookup(conversation);
         console.log(`Blocked by Claude (${intent}) in conversation ${conversation.id.slice(0, 8)}`);
         return refusal;
     }
 
-    // Answers to a question Casper asked
+    // Answers to a question Kasper asked
     if (conversation.state === 'orderNumber' || conversation.state === 'email') {
         if (intent === 'order_details' || intent === 'order_status' || orderNumber || email) return continueOrderLookup(conversation, withDetails, deps);
         if (intent === 'unclear') return null;
@@ -130,7 +152,7 @@ async function understoodReply(conversation, text, deps, understood) {
             const entry = faq.find((item) => item.id === understood.faqTopic);
             if (!entry) return null;
             conversation.misunderstood = 0;
-            return finished({ text: faqAnswer(entry, conversation.language), contactOffer: entry.offerContact || undefined }, words);
+            return finished(faqReply(entry, conversation.language), words);
         }
         case 'greeting':
             // Claude sometimes calls an unknown word a greeting. Only a short message that starts with
@@ -157,6 +179,16 @@ function startOrderLookup(conversation, text, deps) {
     conversation.badAnswers = 0;
     if (!orderNumber) return { text: words.askOrderNumber };
     return continueOrderLookup(conversation, text, deps);
+}
+
+// A fixed answer, with the contact button (and its subject) when the topic has one
+function faqReply(entry, language) {
+    return {
+        text: faqAnswer(entry, language),
+        contactOffer: entry.offerContact || undefined,
+        contactTopic: entry.offerContact ? entry.id : undefined,
+        openContactForm: entry.openContactForm || undefined,
+    };
 }
 
 // Adds "Can I help you with anything else?" + the topics and a "No, thanks" button to a finished answer
@@ -213,7 +245,7 @@ async function continueOrderLookup(conversation, text, deps) {
         conversation.badAnswers += 1;
         if (conversation.badAnswers >= 2) {
             stopOrderLookup(conversation);
-            return { text: words.notUnderstood, quickReplies: words.topics, contactOffer: true };
+            return { text: words.notUnderstood, quickReplies: words.topics, contactOffer: true, contactTopic: 'order' };
         }
         return { text: badText };
     };
@@ -235,7 +267,7 @@ async function continueOrderLookup(conversation, text, deps) {
     conversation.pendingOrderNumber = null;
 
     if (conversation.failedLookups >= deps.limits.maxOrderLookupFailures || !deps.lookupAllowed()) {
-        return { text: words.tooManyLookups, contactOffer: true };
+        return { text: words.tooManyLookups, contactOffer: true, contactTopic: 'order' };
     }
 
     let order;
@@ -243,13 +275,13 @@ async function continueOrderLookup(conversation, text, deps) {
         order = await findOrder(deps.shopify, { orderNumber: orderName, email, useFake: deps.useFakeShopify });
     } catch (error) {
         console.log(`Order lookup failed: ${error.message}`);
-        return { text: words.lookupError, contactOffer: true };
+        return { text: words.lookupError, contactOffer: true, contactTopic: 'order' };
     }
 
     if (!order) {
         conversation.failedLookups += 1;
         deps.lookupFailed();
-        if (conversation.failedLookups >= deps.limits.maxOrderLookupFailures) return { text: words.tooManyLookups, contactOffer: true };
+        if (conversation.failedLookups >= deps.limits.maxOrderLookupFailures) return { text: words.tooManyLookups, contactOffer: true, contactTopic: 'order' };
         conversation.state = 'orderNumber';
         return { text: `${words.orderNotFound} ${words.askOrderNumber}` };
     }

@@ -113,10 +113,10 @@ test('finished answers ask "anything else?" and "no, thanks" says goodbye', asyn
     assert.equal((await say('waar is mijn bestelling')).followUp, undefined);
 });
 
-test('a greeting is answered by Casper, a greeting with a question gets the answer', async () => {
+test('a greeting is answered by Kasper, a greeting with a question gets the answer', async () => {
     const { say } = setup();
-    for (const hello of ['hoi', 'Hallo!', 'goedemorgen', 'Hoi Casper']) {
-        assert.match((await say(hello)).text, /Ik ben Casper/, hello);
+    for (const hello of ['hoi', 'Hallo!', 'goedemorgen', 'Hoi Kasper']) {
+        assert.match((await say(hello)).text, /Ik ben Kasper/, hello);
     }
     assert.match((await say('hoi, waar is mijn bestelling?')).text, /Wat is je ordernummer/);
 });
@@ -175,5 +175,36 @@ test('useless answers to the e-mail question also stop', async () => {
     await say('Waar is mijn bestelling LD9001');
     assert.match((await say('weet ik niet')).text, /geen geldig e-mailadres/);
     await say('nee');
+    assert.equal(conversation.state, null);
+});
+
+test('"wat is de voorraad van dit" asks which product instead of guessing', async () => {
+    for (const question of ['wat is de voorraad van dit', 'Hebben jullie dit op voorraad?', 'is this in stock?', 'Wat is de voorraad?']) {
+        const { conversation, say } = setup();
+        const answer = await say(question);
+        assert.equal(answer.products, undefined, question);
+        assert.equal(conversation.state, 'product', question);
+    }
+    // Then the customer names the product
+    const { say } = setup();
+    await say('wat is de voorraad van dit');
+    assert.equal((await say('ethanol')).products[0].title, 'Ethanol 99,8+% Gedenatureerd');
+});
+
+test('filler words are never searched as a product name', async () => {
+    const { productWords } = await import('../shopify/orders.js');
+    assert.deepEqual(productWords('wat is de voorraad van dit'), ['voorraad']);
+    assert.deepEqual(productWords('Is ethanol 99,8% nog op voorraad?'), ['ethanol', '99,8%', 'voorraad']);
+    assert.deepEqual(productWords('Habt ihr Kaliumjodid?'), ['kaliumjodid']);
+    assert.deepEqual(productWords('Do you have this one'), []);
+    assert.deepEqual(productWords('heb je dat spul nog'), []);
+});
+
+test('after "which product?" a new question is answered, not searched as a product', async () => {
+    const { conversation, say } = setup();
+    assert.match((await say('Wat is de voorraad van dit')).text, /Over welk product gaat het/);
+    const answer = await say('Retour');
+    assert.match(answer.text, /Chemicaliën kunnen helaas niet retour/);
+    assert.equal(answer.products, undefined);
     assert.equal(conversation.state, null);
 });

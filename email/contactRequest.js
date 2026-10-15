@@ -33,9 +33,10 @@ export function createContactSender(contact) {
           })
         : null;
 
-    return async function sendContactRequest({ name, email, message, conversation }) {
+    return async function sendContactRequest({ name, email, subject, message, conversation }) {
         const transcript = conversation.transcript.map((line) => `${line.from === 'customer' ? 'Klant' : 'Bot'}: ${line.text}`).join('\n\n');
         const text = [
+            `Onderwerp: ${subject || '(geen)'}`,
             `Naam: ${name}`,
             `E-mail: ${email}`,
             `Taal: ${conversation.language}`,
@@ -60,7 +61,7 @@ export function createContactSender(contact) {
             from: contact.email.from,
             to: contact.to,
             replyTo: email, // pressing Reply answers the customer directly
-            subject: `Chatbot: vraag van ${name}${conversation.order ? ` (${conversation.order.name})` : ''}`,
+            subject: `[Kasper] ${subject} – ${name}`,
             text,
         });
     };

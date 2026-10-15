@@ -1,4 +1,4 @@
-// Makes build/casper-nas.zip: only what the NAS needs to run Casper.
+// Makes build/casper-nas.zip: only what the NAS needs to run Kasper.
 // Never included: .env (secrets), node_modules, data (contact requests), tests.
 // Run with: node scripts/makeNasPackage.js   - then follow docs/synology-nl.md
 import fs from 'node:fs';
