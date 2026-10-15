@@ -47,6 +47,18 @@
     } catch (e) {}
     if (!labels[savedLanguage]) savedLanguage = null;
 
+    // The conversation is kept while the customer browses the shop: saved in this browser tab only
+    // (sessionStorage, gone when the tab closes) and shown again on every page
+    var STORE_KEY = 'ldc-chat';
+    var MAX_SAVED = 80; // messages; older ones are dropped
+    var history = []; // { me: text } or { bot: answer }
+    var replaying = false; // true while a saved conversation is shown again: no typing pauses
+    var saved = null;
+    try {
+        saved = JSON.parse(sessionStorage.getItem(STORE_KEY) || 'null');
+    } catch (e) {}
+    if (!saved || typeof saved.id !== 'string' || !Array.isArray(saved.history)) saved = null;
+
     var css =
         '.ldc-btn-icon{width:32px;height:32px;display:block;margin:auto}' +
         '#ldc-btn{position:fixed;right:20px;bottom:20px;width:56px;height:56px;border-radius:50%;border:0;background:#1e4475;color:#fff;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25);z-index:2147483000;font-size:26px;line-height:56px}' +
@@ -219,6 +231,7 @@
             box.classList.remove('ldc-closing');
             box.classList.add('open');
             button.classList.add('ldc-hidden');
+            save();
             if (phone.matches) {
                 pageOverflow = document.documentElement.style.overflow;
                 document.documentElement.style.overflow = 'hidden';
@@ -234,6 +247,7 @@
             box.classList.remove('open', 'ldc-closing');
             button.classList.remove('ldc-hidden');
             document.documentElement.style.overflow = pageOverflow;
+            save();
         };
         if (reduceMotion) return finish();
         box.classList.add('ldc-closing');
@@ -346,9 +360,9 @@
         return node;
     }
 
-    // Kasper the lab ghost, floating: a round ghost with a wavy hem, goggles pushed up, blush, little arms and an
-    // Erlenmeyer flask. He is tilted a little, with motion lines and a shadow below. The flask liquid is clipped
-    // to the inside of the flask, so it can never stick out.
+    // Kasper the lab ghost, floating: a round ghost with a wavy hem, goggles pushed up, blush, little arms, a light
+    // blue lab coat with a name badge and an Erlenmeyer flask. He is tilted a little, with motion lines and a shadow
+    // below. The flask liquid is clipped to the inside of the flask, so it can never stick out.
     function kasperAvatar() {
         var ns = 'http://www.w3.org/2000/svg';
         var navy = '#1e4475';
@@ -360,11 +374,23 @@
             (children || []).forEach(function (child) { item.appendChild(node(child[0], child[1], child[2])); });
             return item;
         };
+        var bodyShape = 'M18 49V29c0-8.8 6.3-16 14-16s14 7.2 14 16v20q-2.33 4-4.67 0t-4.67 0-4.67 0-4.67 0-4.67 0-4.66 0z';
         var flaskShape = 'M48.4 36.3v4.2l-3.8 6.4c-.6 1.1 0 2.2 1.3 2.2h8c1.3 0 1.9-1.1 1.3-2.2l-3.8-6.4v-4.2z';
 
         var ghost = [
             ['path', draw({ d: 'M18.2 34.5c-2.6-.3-4.6 1-5.4 3.2' })],
-            ['path', draw({ d: 'M18 46V29c0-8.8 6.3-16 14-16s14 7.2 14 16v17q-2.33 4-4.67 0t-4.67 0-4.67 0-4.67 0-4.67 0-4.66 0z', fill: '#fff' })],
+            ['path', { d: bodyShape, fill: '#fff' }],
+            // light blue lab coat: clipped to the body, open V-neck, buttons and a name badge with a K
+            ['g', { 'clip-path': 'url(#ldc-body)' }, [
+                ['rect', { x: 16, y: 37.6, width: 32, height: 18, fill: '#b9d7f2' }],
+                ['path', { d: 'M26.4 37.6L32 43.4l5.6-5.8z', fill: '#fff' }],
+                ['path', draw({ d: 'M16 37.6h10.4L32 43.4l5.6-5.8H48M32 43.4v9', 'stroke-width': 1.5 })],
+                ['circle', { cx: 34, cy: 45.6, r: .8, fill: navy }],
+                ['circle', { cx: 34, cy: 49, r: .8, fill: navy }],
+                ['rect', draw({ x: 20.2, y: 40.6, width: 6, height: 4.4, rx: .8, fill: '#4fa3e0', 'stroke-width': 1.3 })],
+                ['path', { d: 'M22.3 41.6v2.4M22.3 42.8l1.6-1.2M22.3 42.8l1.6 1.2', stroke: '#fff', 'stroke-width': .9, 'stroke-linecap': 'round' }],
+            ]],
+            ['path', draw({ d: bodyShape })],
             ['ellipse', { cx: 27.2, cy: 29.5, rx: 2.2, ry: 3, fill: navy }],
             ['ellipse', { cx: 36.8, cy: 29.5, rx: 2.2, ry: 3, fill: navy }],
             ['ellipse', { cx: 23.6, cy: 35, rx: 2.3, ry: 1.4, fill: '#f6b8c9' }],
@@ -383,9 +409,12 @@
         ];
 
         // The view box is centred on the ghost; he floats a little lower than the middle
-        return node('svg', { viewBox: '2 2.4 60 60', class: 'ldc-avatar', 'aria-hidden': 'true', focusable: 'false' }, [
-            ['defs', {}, [['clipPath', { id: 'ldc-flask-inside' }, [['path', { d: flaskShape }]]]]],
-            ['ellipse', { cx: 32, cy: 56.6, rx: 10, ry: 1.8, fill: navy, opacity: '.18' }],
+        return node('svg', { viewBox: '2 3.6 60 60', class: 'ldc-avatar', 'aria-hidden': 'true', focusable: 'false' }, [
+            ['defs', {}, [
+                ['clipPath', { id: 'ldc-flask-inside' }, [['path', { d: flaskShape }]]],
+                ['clipPath', { id: 'ldc-body' }, [['path', { d: bodyShape }]]],
+            ]],
+            ['ellipse', { cx: 32, cy: 58.4, rx: 10, ry: 1.8, fill: navy, opacity: '.18' }],
             ['g', { transform: 'translate(0 1.6) rotate(-8 32 32)' }, ghost],
             ['path', draw({ d: 'M9.5 31.6c-1.2 2-1.2 4 0 6M6 30.1c-2 3-2 6 0 9', 'stroke-width': 1.8, opacity: '.55' })],
         ]);
@@ -446,7 +475,7 @@
     var typingBubble = null;
 
     function pause(ms) {
-        return new Promise(function (resolve) { setTimeout(resolve, reduceMotion ? 0 : ms); });
+        return new Promise(function (resolve) { setTimeout(resolve, reduceMotion || replaying ? 0 : ms); });
     }
 
     // Adds something to the chat with a small fade-in, and scrolls so it can be seen
@@ -517,6 +546,7 @@
     //   text -> cards -> (dots) question -> buttons -> contact button -> (dots) "anything else?" -> topic buttons
     // Returns a promise that ends when everything is on screen.
     function showAnswer(answer) {
+        if (!replaying) remember({ bot: answer });
         var steps = [];
         // Kasper switched language (the customer writes in another language): follow along
         if (answer.language && answer.language !== language) applyLanguage(answer.language);
@@ -538,7 +568,7 @@
             steps.push(function () {
                 row([{ label: contactLabel || L.send, onClick: contactForm }]);
                 // e.g. cancelling an order: Kasper cannot do it, so the form opens right away
-                if (answer.openContactForm) contactForm();
+                if (answer.openContactForm && !replaying) contactForm();
                 return pause(150);
             });
         }
@@ -573,7 +603,9 @@
         var list = el('div', { class: 'ldc-cards' });
         products.forEach(function (product, index) {
             var url = /^https?:\/\//.test(product.url || '') ? product.url : null;
-            var card = el(url ? 'a' : 'div', url ? { class: 'ldc-card', href: url, target: '_blank', rel: 'noopener' } : { class: 'ldc-card' });
+            // A product in this shop opens in the same tab (the chat comes along); anything else in a new tab
+            var sameShop = url && new URL(url).host === location.host;
+            var card = el(url ? 'a' : 'div', url ? (sameShop ? { class: 'ldc-card', href: url } : { class: 'ldc-card', href: url, target: '_blank', rel: 'noopener' }) : { class: 'ldc-card' });
             if (/^https:\/\/cdn\.shopify\.com\//.test(product.image || '')) {
                 card.appendChild(el('img', { src: product.image, alt: '', loading: 'lazy' }));
             } else {
@@ -754,6 +786,7 @@
             .then(function (answer) {
                 conversationId = answer.conversationId;
                 contactLabel = answer.contactLabel || contactLabel;
+                history = [];
                 return showAnswer(answer);
             })
             .catch(offline)
@@ -763,6 +796,7 @@
     function ask(text) {
         if (busy) return;
         show(text, 'me');
+        remember({ me: text });
         anchor = log.lastChild;
         busy = true;
         request('/message', { conversationId: conversationId, text: text })
@@ -772,6 +806,7 @@
                 if (answer.__status === 404) {
                     return request('/start', { language: language, country: country }).then(function (fresh) {
                         conversationId = fresh.conversationId;
+                        save();
                         return request('/message', { conversationId: conversationId, text: text });
                     }).then(showAnswer);
                 }
@@ -784,12 +819,58 @@
     function action(id, label) {
         if (busy) return;
         show(label, 'me');
+        remember({ me: label });
         anchor = log.lastChild;
         busy = true;
         request('/action', { conversationId: conversationId, action: id })
             .then(showAnswer)
             .catch(offline)
             .then(function () { busy = false; });
+    }
+
+    // Saves the conversation in this tab (see STORE_KEY)
+    function remember(item) {
+        history.push(item);
+        if (history.length > MAX_SAVED) history = history.slice(-MAX_SAVED);
+        save();
+    }
+
+    function save() {
+        if (!conversationId) return;
+        try {
+            sessionStorage.setItem(STORE_KEY, JSON.stringify({ id: conversationId, language: language, open: box.classList.contains('open'), history: history }));
+        } catch (e) {}
+    }
+
+    // Shows the saved conversation again on a new page, at once (no typing dots). Only the buttons
+    // under the last message still work, like before. An open contact form is not brought back.
+    function restore() {
+        conversationId = saved.id;
+        history = saved.history.slice(-MAX_SAVED);
+        if (labels[saved.language]) applyLanguage(saved.language);
+        replaying = true;
+        busy = true;
+        return history
+            .reduce(function (chain, item) {
+                return chain.then(function () {
+                    if (item && typeof item.me === 'string') return show(item.me, 'me');
+                    if (item && item.bot && typeof item.bot === 'object') return showAnswer(item.bot);
+                });
+            }, Promise.resolve())
+            .catch(function () {})
+            .then(function () {
+                replaying = false;
+                busy = false;
+                // Buttons above the customer's last message were already used or passed by
+                var mine = log.querySelectorAll('.ldc-me');
+                var lastMine = mine[mine.length - 1];
+                Array.prototype.forEach.call(log.querySelectorAll('.ldc-row'), function (r) {
+                    if (lastMine && r.compareDocumentPosition(lastMine) & Node.DOCUMENT_POSITION_FOLLOWING) {
+                        Array.prototype.forEach.call(r.children, function (c) { c.disabled = true; });
+                    }
+                });
+                log.scrollTop = log.scrollHeight;
+            });
     }
 
     function contactForm() {
@@ -822,11 +903,18 @@
                 .then(function (answer) {
                     formBox.remove();
                     show(answer.text || L.offline, 'bot');
+                    if (answer.text) remember({ bot: { text: answer.text } });
                 })
                 .catch(function () {
                     submit.disabled = false;
                     offline();
                 });
         });
+    }
+
+    if (saved) {
+        restore();
+        // Open again when it was open, but not on a phone: there the chat covers the whole page
+        if (saved.open && !phone.matches) setOpen(true);
     }
 })();

@@ -132,6 +132,7 @@ const PRODUCT_QUERY = `
                 refillFrom: metafield(namespace: "custom", key: "refill_from") { value }
                 bulkSkus: metafield(namespace: "custom", key: "bulk_skus") { value }
                 bulkGroup: metafield(namespace: "custom", key: "bulk_group") { value }
+                copyOf: metafield(namespace: "custom", key: "copy_of") { value }
                 variants(first: 30) {
                     nodes {
                         sku availableForSale inventoryQuantity inventoryItem { tracked }
@@ -144,6 +145,11 @@ const PRODUCT_QUERY = `
             }
         }
     }`;
+
+// A copy of a product for visitors who are not logged in (shown on the website, cannot be ordered)
+export function isPlaceholderCopy(product) {
+    return Boolean(product.copyOf?.value) || (product.tags || []).some((tag) => tag.toLowerCase() === 'particulier-kopie');
+}
 
 // Own brand = has the house brand tag (e.g. "Huismerk") OR the house brand vendor (e.g. "Laboratoriumdiscounter")
 export function isHouseBrand(settings, product) {
@@ -190,7 +196,8 @@ export function productWords(text) {
 
 // Searches products by name.
 // country: the visitor's country (e.g. "NL"), for the delivery time
-export async function findProducts(settings, { text, useFake, country = 'NL' }) {
+// titleOnly: only search product titles (plus CAS and article numbers), for text we are not sure is a product
+export async function findProducts(settings, { text, useFake, country = 'NL', titleOnly = false }) {
     const words = productWords(text);
     if (words.length === 0) return [];
 
@@ -198,12 +205,14 @@ export async function findProducts(settings, { text, useFake, country = 'NL' }) 
     // and Shopify cannot search in the middle of a word. So we try, until something is found:
     //   1. the words glued together: kaliumjodide*
     //   2. every word as the start of a word: kalium* jodide*
-    //   3. Shopify's normal text search
+    //   3. Shopify's normal text search (also finds CAS numbers in the description). With titleOnly
+    //      only for numbers, otherwise "probeer m te breken" finds every product that mentions "breken"
     const joined = words.join('');
+    const fullText = !titleOnly || words.some((word) => /\d/.test(word));
     const searches = [
         words.length > 1 ? `title:${joined}*` : null,
         words.map((word) => `title:${word}*`).join(' '),
-        words.join(' '),
+        fullText ? words.join(' ') : null,
     ].filter(Boolean);
 
     let products = [];
@@ -229,6 +238,11 @@ export async function findProducts(settings, { text, useFake, country = 'NL' }) 
             break;
         }
     }
+
+    // Placeholder copies (tag "particulier-kopie" / metafield custom.copy_of) let visitors who are not logged in
+    // see a product they cannot order. Kasper shows the real product instead; a copy only when nothing else is left
+    const originals = products.filter((product) => !isPlaceholderCopy(product));
+    if (originals.length > 0) products = originals;
 
     // Own brand first, then the best match: titles that contain what the customer typed (spaces ignored)
     const score = (product) => {

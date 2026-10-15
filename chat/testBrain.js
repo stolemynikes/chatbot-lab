@@ -90,7 +90,8 @@ export async function testReply(conversation, text, deps, understood = null) {
 
     // 5. Only a product name ("Kaliumchloride", "ethanol 96%"): show that product
     if (looksLikeProductName(text)) {
-        const answer = await productAnswer(conversation, text, deps);
+        // Not sure this is a product, so only product titles count
+        const answer = await productAnswer(conversation, text, deps, null, { titleOnly: true });
         if (answer.products) return answer;
     }
 
@@ -328,11 +329,11 @@ function orderCard(order) {
     };
 }
 
-async function productAnswer(conversation, text, deps, fallbackText = null) {
+async function productAnswer(conversation, text, deps, fallbackText = null, { titleOnly = false } = {}) {
     const words = t(conversation.language);
     let products;
     try {
-        products = await findProducts(deps.shopify, { text, useFake: deps.useFakeShopify, country: conversation.country });
+        products = await findProducts(deps.shopify, { text, useFake: deps.useFakeShopify, country: conversation.country, titleOnly });
         if (products.length === 0 && fallbackText && fallbackText !== text) {
             products = await findProducts(deps.shopify, { text: stripStockWords(normalize(fallbackText)), useFake: deps.useFakeShopify, country: conversation.country });
         }
