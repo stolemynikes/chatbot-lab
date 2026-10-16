@@ -1,6 +1,23 @@
 import express from 'express';
 
-import { PORT, CHAT_MODE, claude, ALLOWED_ORIGINS, TRUST_CLOUDFLARE, SHOW_TEST_PAGE, shopify, useFakeShopify, SPLIT_SHIPMENT_MODE, contact, limits } from './config.js';
+import { PORT, CHAT_MODE, claude, ALLOWED_ORIGINS, TRUST_CLOUDFLARE, SHOW_TEST_PAGE, shopify, useFakeShopify, SPLIT_SHIPMENT_MODE, contact, limits, ADMIN_KEY, CHAT_ENABLED } from './config.js';
+import { createLogBook } from './admin/logBook.js';
+import { createKasperAdmin, translateLine } from './admin/kasperAdmin.js';
+import { adminRoute } from './routes/adminRoute.js';
+
+// Everything Kasper writes to the console also goes to the logbook of the NAS admin panel (data/logs, 30 days)
+const logBook = createLogBook({ translate: translateLine });
+logBook.install();
+logBook.prune();
+setInterval(() => logBook.prune(), 24 * 60 * 60 * 1000).unref();
+
+// Counters for the NAS admin panel (only numbers, never what customers wrote)
+const stats = { day: new Date().toISOString().slice(0, 10), conversationsToday: 0, contactToday: 0 };
+function count(field) {
+    const today = new Date().toISOString().slice(0, 10);
+    if (stats.day !== today) Object.assign(stats, { day: today, conversationsToday: 0, contactToday: 0 });
+    stats[field] += 1;
+}
 import { Conversations } from './chat/conversations.js';
 import { testReply } from './chat/testBrain.js';
 import { createClaudeReply } from './chat/claudeBrain.js';
@@ -57,15 +74,31 @@ app.use(['/api', '/health'], (req, res, next) => {
 });
 
 //HTTPS ROUTES
+// Switched off in the admin panel: no chat (the widget below is then empty, so the button disappears)
+if (!CHAT_ENABLED) app.use('/api/chat', (req, res) => res.status(503).send({ message: 'Chat switched off' }));
+const sendContact = createContactSender(contact);
 app.use(
     '/api/chat',
     createChatRoute({
         conversations: new Conversations({ idleMinutes: limits.conversationIdleMinutes }),
         reply: CHAT_MODE === 'claude' ? createClaudeReply(claude) : testReply,
         settings: { shopify, useFakeShopify, splitMode: SPLIT_SHIPMENT_MODE, limits },
-        sendContactRequest: createContactSender(contact),
+        sendContactRequest: async (request) => {
+            const result = await sendContact(request);
+            count('contactToday');
+            return result;
+        },
+        onStart: () => count('conversationsToday'),
     }),
 );
+
+// Only for the NAS admin panel, inside the NAS (see admin/adminAuth.js). Without ADMIN_KEY these routes do not exist.
+if (ADMIN_KEY) {
+    app.use('/internal/admin', adminRoute({ adminKey: ADMIN_KEY, provider: createKasperAdmin({ stats, useFakeShopify }), logBook }));
+}
+
+// Switched off: an empty widget, so no chat button appears on the shop
+if (!CHAT_ENABLED) app.get('/widget.js', (req, res) => res.type('application/javascript').send('/* Kasper is switched off in the admin panel */'));
 
 // For Container Manager's health check
 app.get('/health', (req, res) => res.send('ok'));
@@ -82,6 +115,7 @@ setInterval(() => deleteOldContactRequests(contact), 24 * 60 * 60 * 1000).unref(
 
 app.listen(PORT, () => {
     console.log(`Chatbot running on port ${PORT}${SHOW_TEST_PAGE ? `, test page: http://localhost:${PORT}/test.html` : ' (test page off)'}`);
+    if (!CHAT_ENABLED) console.log('Chat switched off in the admin panel: the chat button is hidden on the shop');
     if (TRUST_CLOUDFLARE) console.log('Behind the Cloudflare Tunnel: visitor addresses come from Cloudflare');
     if (ALLOWED_ORIGINS.length > 0) console.log(`Chat allowed on: ${ALLOWED_ORIGINS.join(', ')}`);
     console.log(`Mode: ${CHAT_MODE}${CHAT_MODE === 'claude' ? ` (${claude.model})` : ''}, Shopify: ${useFakeShopify ? 'fake test orders' : shopify.storeDomain}, partial shipping: ${SPLIT_SHIPMENT_MODE}, contact: ${contact.email.enabled ? `e-mail to ${contact.to}` : `files in ${contact.saveDir}`}`);

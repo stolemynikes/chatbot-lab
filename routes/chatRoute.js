@@ -20,7 +20,8 @@ export function contactSubject(conversation, answer) {
     return { contactTopic: topic, contactSubjects: subjects };
 }
 
-export function createChatRoute({ conversations, reply, settings, sendContactRequest }) {
+// onStart: called for every new conversation (counted for the NAS admin panel)
+export function createChatRoute({ conversations, reply, settings, sendContactRequest, onStart = () => {} }) {
     const router = express.Router();
     const lookupBrake = visitorBrake({ max: 10, minutes: 60, label: 'Order lookups blocked' });
     const contactBrake = visitorBrake({ max: 5, minutes: 60, label: 'Contact requests blocked' });
@@ -37,6 +38,7 @@ export function createChatRoute({ conversations, reply, settings, sendContactReq
 
     router.post('/start', (req, res) => {
         const conversation = conversations.start(pickLanguage(req.body?.language), String(req.body?.country || '').toUpperCase());
+        onStart();
         const words = t(conversation.language);
         conversation.transcript.push({ from: 'bot', text: words.welcome });
         res.send({ conversationId: conversation.id, text: words.welcome, quickReplies: words.topics, contactLabel: words.contactButton });

@@ -23,8 +23,14 @@ services:
       # Only reachable through the tunnel: trust Cloudflare's visitor address, and no public test page
       TRUST_CLOUDFLARE: "true"
       SHOW_TEST_PAGE: "false"
+      # Settings from the NAS admin panel and the logbook: on the volume below, so they survive a rebuild
+      SETTINGS_PATH: /app/data/settings.json
+    volumes:
+      - kasper-data:/app/data
     networks:
       - intern
+      # Shared with the NAS admin panel (create it once: Container Manager -> Network -> Add -> nas-apps)
+      - nas-apps
 
   tunnel:
     image: cloudflare/cloudflared:latest
@@ -39,3 +45,9 @@ services:
 
 networks:
   intern:
+  nas-apps:
+    external: true
+    name: nas-apps
+
+volumes:
+  kasper-data:

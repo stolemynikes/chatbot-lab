@@ -11,6 +11,9 @@ RUN npm ci --omit=dev && npm cache clean --force
 
 COPY . .
 
+# The folder for panel settings and the logbook (a Docker volume, see docker-compose.yml), owned by the app user
+RUN mkdir -p /app/data && chown node:node /app/data
+
 # Never run as root (docker-compose.yml sets the DSM user that owns the project folder)
 USER node
 
