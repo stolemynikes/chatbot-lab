@@ -15,6 +15,7 @@ const include = [
     'index.js',
     'config.js',
     'README.md',
+    'admin',
     'chat',
     'content',
     'email',

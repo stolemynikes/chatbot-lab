@@ -8,6 +8,9 @@
 
 services:
   casper:
+    # The image GitHub builds after a push to the branch release (NAS Beheer -> Paneel -> Updates).
+    # build: . is only used when you build here yourself (docker compose up -d --build).
+    image: ghcr.io/stolemynikes/casper:release
     build: .
     container_name: casper
     restart: unless-stopped
@@ -36,8 +39,9 @@ services:
     image: cloudflare/cloudflared:latest
     container_name: casper-tunnel
     restart: unless-stopped
-    # Quick tunnel: no Cloudflare account needed, the address is in this container's log
-    command: tunnel --no-autoupdate --url http://casper:8090
+    # Quick tunnel: no Cloudflare account needed, the address is in this container's log.
+    # The metrics port lets Kasper read that address (only inside this Docker network), see shopify/widgetAddress.js
+    command: tunnel --no-autoupdate --metrics 0.0.0.0:20241 --url http://casper:8090
     depends_on:
       - casper
     networks:

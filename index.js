@@ -1,9 +1,12 @@
 import express from 'express';
 
-import { PORT, CHAT_MODE, claude, ALLOWED_ORIGINS, TRUST_CLOUDFLARE, SHOW_TEST_PAGE, shopify, useFakeShopify, SPLIT_SHIPMENT_MODE, contact, limits, ADMIN_KEY, CHAT_ENABLED } from './config.js';
+import { PORT, CHAT_MODE, claude, ALLOWED_ORIGINS, TRUST_CLOUDFLARE, SHOW_TEST_PAGE, shopify, useFakeShopify, SPLIT_SHIPMENT_MODE, contact, limits, ADMIN_KEY, CHAT_ENABLED, PUBLISH_WIDGET_URL, TUNNEL_INFO_URL } from './config.js';
 import { createLogBook } from './admin/logBook.js';
 import { createKasperAdmin, translateLine } from './admin/kasperAdmin.js';
 import { adminRoute } from './routes/adminRoute.js';
+import { createStats } from './admin/stats.js';
+import { onClaudeUsage } from './chat/interpreter.js';
+import { createWidgetAddress } from './shopify/widgetAddress.js';
 
 // Everything Kasper writes to the console also goes to the logbook of the NAS admin panel (data/logs, 30 days)
 const logBook = createLogBook({ translate: translateLine });
@@ -11,12 +14,17 @@ logBook.install();
 logBook.prune();
 setInterval(() => logBook.prune(), 24 * 60 * 60 * 1000).unref();
 
-// Counters for the NAS admin panel (only numbers, never what customers wrote)
-const stats = { day: new Date().toISOString().slice(0, 10), conversationsToday: 0, contactToday: 0 };
-function count(field) {
-    const today = new Date().toISOString().slice(0, 10);
-    if (stats.day !== today) Object.assign(stats, { day: today, conversationsToday: 0, contactToday: 0 });
-    stats[field] += 1;
+// Counters for the NAS admin panel, per day (only numbers, never what customers wrote)
+const stats = createStats();
+onClaudeUsage((usage) => {
+    stats.add('inputTokens', (usage.input_tokens || 0) + (usage.cache_creation_input_tokens || 0) + (usage.cache_read_input_tokens || 0));
+    stats.add('outputTokens', usage.output_tokens || 0);
+});
+// What kind of answer Kasper gave: an order looked up, products shown, the contact form offered
+function countAnswer(answer) {
+    if (answer?.order) stats.add('orderLookups');
+    if (answer?.products?.length) stats.add('productQuestions');
+    if (answer?.contactOffer) stats.add('contactOffered');
 }
 import { Conversations } from './chat/conversations.js';
 import { testReply } from './chat/testBrain.js';
@@ -85,16 +93,24 @@ app.use(
         settings: { shopify, useFakeShopify, splitMode: SPLIT_SHIPMENT_MODE, limits },
         sendContactRequest: async (request) => {
             const result = await sendContact(request);
-            count('contactToday');
+            stats.add('contactSent');
             return result;
         },
-        onStart: () => count('conversationsToday'),
+        onStart: () => stats.add('conversations'),
+        onAnswer: countAnswer,
     }),
 );
 
+// The chat address in the shop: checked at the start and every 5 minutes, written only when it changed
+const widgetAddress = PUBLISH_WIDGET_URL && !useFakeShopify ? createWidgetAddress({ shopify, tunnelInfoUrl: TUNNEL_INFO_URL }) : null;
+if (widgetAddress) {
+    setTimeout(() => widgetAddress.update(), 15_000).unref();
+    setInterval(() => widgetAddress.update(), 5 * 60_000).unref();
+}
+
 // Only for the NAS admin panel, inside the NAS (see admin/adminAuth.js). Without ADMIN_KEY these routes do not exist.
 if (ADMIN_KEY) {
-    app.use('/internal/admin', adminRoute({ adminKey: ADMIN_KEY, provider: createKasperAdmin({ stats, useFakeShopify }), logBook }));
+    app.use('/internal/admin', adminRoute({ adminKey: ADMIN_KEY, provider: createKasperAdmin({ stats, useFakeShopify, contact, widgetAddress }), logBook }));
 }
 
 // Switched off: an empty widget, so no chat button appears on the shop

@@ -19,6 +19,10 @@ const env = (name, fallback = '') => (process.env[name] || fallback).trim();
 
 export const PORT = Number(env('PORT', '8090'));
 
+// Put Kasper's tunnel address in the shop automatically (shop/metafield kasper.widget_url), see shopify/widgetAddress.js
+export const PUBLISH_WIDGET_URL = env('PUBLISH_WIDGET_URL', 'false') === 'true';
+export const TUNNEL_INFO_URL = env('TUNNEL_INFO_URL', 'http://casper-tunnel:20241/quicktunnel');
+
 // Which "brain" answers the customer:
 //   test   = fixed answers and keyword matching, no AI (free, for testing the whole flow)
 //   claude = Claude reads the question, Kasper answers with the same fixed texts (needs ANTHROPIC_API_KEY)

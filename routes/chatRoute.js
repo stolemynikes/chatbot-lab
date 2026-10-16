@@ -20,8 +20,9 @@ export function contactSubject(conversation, answer) {
     return { contactTopic: topic, contactSubjects: subjects };
 }
 
-// onStart: called for every new conversation (counted for the NAS admin panel)
-export function createChatRoute({ conversations, reply, settings, sendContactRequest, onStart = () => {} }) {
+// onStart: called for every new conversation, onAnswer: for every answer of Kasper (both only counted for
+// the NAS admin panel; the answer is looked at for what kind it was, nothing of it is kept)
+export function createChatRoute({ conversations, reply, settings, sendContactRequest, onStart = () => {}, onAnswer = () => {} }) {
     const router = express.Router();
     const lookupBrake = visitorBrake({ max: 10, minutes: 60, label: 'Order lookups blocked' });
     const contactBrake = visitorBrake({ max: 5, minutes: 60, label: 'Contact requests blocked' });
@@ -70,6 +71,7 @@ export function createChatRoute({ conversations, reply, settings, sendContactReq
         try {
             conversation.transcript.push({ from: 'customer', text });
             const answer = await reply(conversation, text, deps);
+            onAnswer(answer);
             // Product cards are written out in the transcript, so the contact e-mail shows what the customer saw
             const cards = [
                 ...(answer.products || []).map((product) => `\n• ${product.title} (${{ in: 'op voorraad', avail: 'leverbaar', out: 'niet op voorraad' }[product.stock] ?? 'niet te koop'})`),

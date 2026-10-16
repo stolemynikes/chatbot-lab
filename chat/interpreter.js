@@ -71,6 +71,12 @@ Fields (use an empty string when not present):
 
 let client = null;
 
+// Counts the tokens of every Claude call (for the NAS admin panel); set by index.js
+let countUsage = () => {};
+export function onClaudeUsage(fn) {
+    countUsage = fn;
+}
+
 // Returns { intent, faqTopic, productQuery, orderNumber, email, language } or null when Claude cannot be used
 // (no key, no credit, timeout, refusal...). The caller then falls back to test mode.
 export async function interpret(text, { apiKey, model, waitingFor }) {
@@ -93,6 +99,11 @@ export async function interpret(text, { apiKey, model, waitingFor }) {
         else if (error instanceof Anthropic.APIError) console.log(`Claude API error ${error.status}: ${error.message}`);
         else console.log(`Claude could not be reached: ${error.message}`);
         return null;
+    }
+    try {
+        countUsage(response.usage || {});
+    } catch {
+        // counting must never break the chat
     }
 
     if (response.stop_reason === 'refusal') {
